@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PipkinPad</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css">
+  <style>
+    :root { --ink:#493d57; --muted:#8d8099; --line:#e8ddeb; --bg:#f8f4fb; --paper:#fffaff; --lilac:#f2e8ff; --pink:#ffe1ee; --peach:#ffeada; --blue:#e2f3ff; --accent:#a276cf; --terminal:#332d3d; --left-pane:244px; --right-pane:340px; }
+    * { box-sizing:border-box; } body { margin:0; height:100vh; min-width:940px; overflow:hidden; background:var(--bg); color:var(--ink); font:14px ui-rounded,"Nunito",system-ui,sans-serif; }
+    button,input,textarea { font:inherit; } button { border:0; color:var(--ink); cursor:pointer; transition:.15s; } button:hover { filter:brightness(.97); transform:translateY(-1px); }
+    .top { height:42px; padding:0 16px; display:flex; align-items:center; gap:22px; background:#fffafd; border-bottom:1px solid var(--line); user-select:none; }
+    .brand { font-weight:850; color:#8058a8; }.brand b { display:inline-grid; place-items:center; width:24px; height:24px; margin-right:6px; border-radius:8px; background:var(--pink); }.work { margin-left:auto; border-radius:99px; padding:5px 10px; background:var(--lilac); color:var(--muted); font-size:12px; }
+    .shell { height:calc(100vh - 42px); display:grid; grid-template-columns:var(--left-pane) 8px minmax(380px,1fr) 8px var(--right-pane); }
+    .splitter { cursor:col-resize; background:var(--bg); position:relative; z-index:2; }.splitter::after { content:''; position:absolute; top:0; bottom:0; left:3px; width:2px; background:transparent; }.splitter:hover::after,.splitter.dragging::after { background:#c8addf; }
+    .files { padding:14px 10px; overflow:auto; background:#fffafd; border-right:1px solid var(--line); }.section-title { display:flex; align-items:center; justify-content:space-between; margin:0 3px 12px; color:var(--muted); font-size:11px; font-weight:800; letter-spacing:1px; }.tools { display:flex; gap:6px; margin-bottom:10px; }.tools button,.round { border-radius:9px; padding:6px 8px; background:var(--pink); font-size:12px; }.tools button:nth-child(2),.round.blue { background:var(--blue); }.tree .item { padding:7px; border-radius:8px; cursor:pointer; word-break:break-all; }.tree .item:hover { background:var(--lilac); }.tree .folder { font-weight:700; color:#725284; }.upload { display:none; }
+    .center { min-width:0; display:flex; flex-direction:column; padding:10px; background:var(--bg); }.tabbar { height:39px; display:flex; align-items:end; gap:4px; padding:0 7px; background:#f3edf7; border:1px solid var(--line); border-bottom:0; border-radius:14px 14px 0 0; overflow:auto; }.tab { height:32px; max-width:220px; display:flex; align-items:center; gap:7px; padding:0 9px; border:1px solid transparent; border-radius:9px 9px 0 0; background:transparent; color:var(--muted); font-size:12px; white-space:nowrap; }.tab.active { background:var(--paper); border-color:var(--line); border-bottom-color:var(--paper); color:var(--ink); font-weight:700; }.tab .x { padding:0 2px; color:#aa98b4; }.new-tab { margin-left:2px; width:28px; height:27px; border-radius:8px; background:var(--pink); font-size:18px; }.area { position:relative; flex:1; min-height:0; border:1px solid var(--line); border-radius:0 0 14px 14px; background:var(--paper); overflow:hidden; box-shadow:0 8px 24px #b687bc1c; }.launcher { height:100%; display:grid; place-content:center; justify-items:center; gap:13px; color:var(--muted); text-align:center; }.launcher .spark { font-size:38px; }.launcher h2 { margin:0; color:var(--ink); font-size:18px; }.launcher p { margin:0; max-width:330px; font-size:13px; line-height:1.6; }.launcher button { padding:10px 15px; border-radius:11px; background:var(--lilac); font-weight:700; }.panel { position:absolute; inset:0; display:none; }.panel.active { display:flex; }
+    .file-panel { flex-direction:column; }.editor { flex:1; width:100%; border:0; outline:0; resize:none; padding:17px; background:var(--paper); color:#4d4557; font:13px/1.7 ui-monospace,"Cascadia Code",monospace; }.editor-bottom { display:flex; align-items:center; gap:7px; padding:8px 11px; border-top:1px solid var(--line); background:#fffafd; }.pill { padding:6px 10px; border-radius:99px; background:var(--lilac); font-size:12px; }.pill.primary { background:var(--accent); color:white; }.pill.peach { background:var(--peach); }.status { margin-left:auto; color:var(--muted); font-size:11px; }
+    .terminal-panel { flex-direction:column; background:var(--terminal); color:#f3e9f8; }.term-head { height:39px; display:flex; align-items:center; gap:8px; padding:0 13px; background:#443b50; color:#ece3f1; font-size:12px; }.dots { display:flex; gap:5px; }.dots i { width:8px; height:8px; background:#ffa2b9; border-radius:50%; }.dots i:nth-child(2) { background:#ffdb93; }.dots i:nth-child(3) { background:#a8e6c0; }.term-status { margin-left:auto; color:#cbb7d9; }.xterm-host { flex:1; min-height:0; padding:7px 10px; }.xterm-host .xterm { height:100%; }
+    .chat-wrap { padding:10px; background:#fffafd; border-left:1px solid var(--line); }.chat { height:100%; display:flex; flex-direction:column; overflow:hidden; border:1px solid #efd9ec; border-radius:16px; background:linear-gradient(#fff7fc,#fff); box-shadow:0 8px 24px #b687bc22; }.chat-head { display:flex; align-items:center; gap:9px; padding:13px; border-bottom:1px solid #f0ddea; }.avatar { display:grid; place-items:center; width:30px; height:30px; border-radius:10px; background:var(--pink); }.chat-head strong { font-size:13px; }.chat-head small { display:block; margin-top:2px; color:var(--muted); font-size:10px; }.settings { margin-left:auto; width:29px; height:29px; border-radius:9px; background:var(--lilac); }.context { margin:10px 11px 0; padding:8px; border-radius:9px; background:var(--blue); color:#5f7892; font-size:11px; }.context-list { display:flex; flex-direction:column; gap:4px; }.context-item { display:flex; align-items:center; gap:6px; padding:5px 7px; border-radius:7px; background:#d0e8ff; font-size:11px; cursor:pointer; transition:.15s; }.context-item.disabled { opacity:.45; background:#e8ddeb; }.context-item .name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }.context-item .toggle { flex:none; width:24px; height:14px; border-radius:7px; background:#c0b0cc; position:relative; transition:.15s; }.context-item .toggle::after { content:''; position:absolute; top:2px; left:2px; width:10px; height:10px; border-radius:50%; background:white; transition:.15s; }.context-item:not(.disabled) .toggle { background:var(--accent); }.context-item:not(.disabled) .toggle::after { left:12px; }.context-empty { padding:2px 0; }.messages { flex:1; overflow-y:auto; overflow-x:hidden; padding:12px; min-height:0; max-height:calc(100vh - 320px); }
+.messages::-webkit-scrollbar { width:6px; }
+.messages::-webkit-scrollbar-track { background:transparent; }
+.messages::-webkit-scrollbar-thumb { background:#d8c8e0; border-radius:3px; }
+.messages::-webkit-scrollbar-thumb:hover { background:#c0a8d0; }.message { max-width:92%; margin:0 0 9px; padding:9px 10px; border-radius:11px; white-space:pre-wrap; line-height:1.45; font-size:12px; }
+.message .reasoning { margin-bottom:8px; padding:8px 10px; border-radius:8px; background:#f5f0fa; border:1px solid #e0d5eb; font-size:11px; color:var(--muted); font-style:italic; white-space:pre-wrap; cursor:pointer; transition:.25s ease; max-height:300px; overflow:hidden; }
+.message .reasoning::before { content:'💭 Thinking...'; display:block; font-weight:700; margin-bottom:4px; color:var(--accent); font-style:normal; }
+.message .reasoning.collapsed { max-height:22px; padding:0 10px; margin-bottom:4px; white-space:nowrap; overflow:hidden; background:#f0ebf5; border-color:#e8ddf0; font-size:0; }
+.message .reasoning.collapsed::before { content:'💭 Thinking complete (click to expand)'; font-size:11px; margin-bottom:0; line-height:22px; }
+.message .content { white-space:pre-wrap; }.assistant { background:#f2e8fb; border-bottom-left-radius:3px; }.user { margin-left:auto; background:#ffe4ef; border-bottom-right-radius:3px; }.confirm { width:100%; margin:-3px 0 10px; padding:8px; border-radius:9px; background:var(--peach); font-size:11px; text-align:left; }
+    .tool-call { width:100%; margin:-3px 0 10px; padding:10px; border-radius:11px; background:#fff3e0; border:1px solid #ffd09a; font-size:12px; }
+    .tool-header { font-weight:700; color:#b45f1a; margin-bottom:6px; }
+    .tool-command { padding:8px; border-radius:7px; background:#ffe8cc; font-family:ui-monospace,monospace; font-size:11px; word-break:break-all; margin-bottom:6px; }
+    .tool-session { color:var(--muted); font-size:10px; margin-bottom:8px; }
+    .tool-actions { display:flex; gap:6px; }
+    .tool-actions button { padding:5px 10px; border-radius:7px; font-size:11px; font-weight:700; }
+    .tool-run { background:var(--accent); color:white; }
+    .tool-run:disabled { background:#a0d4a0; color:#2d5a2d; }
+    .tool-cancel { background:var(--lilac); }
+    .tool-output { margin-top:8px; padding:8px; border-radius:7px; background:#fff8f0; font-family:ui-monospace,monospace; font-size:11px; white-space:pre-wrap; word-break:break-all; max-height:200px; overflow:auto; }.composer { padding:10px; border-top:1px solid #f0ddea; background:#fffafd; }.hint { margin-bottom:6px; color:var(--muted); font-size:10px; }.prompt { width:100%; height:78px; resize:none; border:1px solid #ead8e7; border-radius:10px; padding:9px; background:white; color:var(--ink); outline:0; font-size:12px; }.compose-row { display:flex; align-items:center; gap:7px; margin-top:7px; }.clear { padding:6px 8px; border-radius:8px; background:var(--lilac); font-size:11px; }.ask { margin-left:auto; padding:7px 12px; border-radius:9px; background:var(--accent); color:white; font-size:12px; font-weight:700; }
+    .modal-backdrop { position:fixed; inset:0; z-index:10; display:none; place-items:center; background:#5c476566; }.modal-backdrop.open { display:grid; }.modal { width:360px; padding:20px; border-radius:18px; background:#fffafd; box-shadow:0 18px 55px #3f264755; }.modal h2 { margin:0 0 4px; font-size:17px; }.modal p { margin:0 0 15px; color:var(--muted); font-size:12px; }.modal label { display:block; margin:10px 0 5px; font-size:12px; font-weight:700; }.modal input { width:100%; padding:9px; border:1px solid var(--line); border-radius:9px; outline:0; color:var(--ink); }.modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:17px; }.modal-actions button { padding:8px 12px; border-radius:9px; background:var(--lilac); }.modal-actions .save-settings { background:var(--accent); color:white; }.file-menu { position:fixed; z-index:20; display:none; min-width:120px; padding:5px; border:1px solid var(--line); border-radius:9px; background:var(--paper); box-shadow:0 8px 22px #3f264733; }.file-menu.open { display:block; }.file-menu button { display:block; width:100%; padding:7px 9px; border-radius:6px; background:transparent; text-align:left; font-size:12px; }.file-menu button:hover { background:var(--lilac); }.file-menu button.danger { color:#b14c6c; }
+  </style>
+</head>
+<body>
+  <header class="top"><div class="brand"><b>✦</b>PipkinPad</div><div class="work">⌂ Workspace</div></header>
+  <div class="shell">
+    <aside class="files"><div class="section-title">File Browser <button class="round blue" id="refresh">↻</button></div><div class="tools"><button id="newfile">＋ File</button><button id="newdir">＋ Folder</button><button id="upload-trigger">⇧</button><input class="upload" id="upload" type="file"></div><div class="tree" id="files"></div></aside><div class="splitter" id="left-splitter" title="Drag to resize"></div>
+    <main class="center"><div class="tabbar" id="tabbar"><button class="new-tab" id="new-terminal" title="New Terminal">＋</button></div><section class="area" id="area"><div class="launcher" id="launcher"><div class="spark">✦</div><h2>Welcome to PipkinPad</h2><p>Open files from the left, or click <b>＋</b> above to create a Terminal. They all work as independent tabs here.</p><button id="launch-terminal">＋ New Terminal</button></div></section></main>
+    <div class="splitter" id="right-splitter" title="Drag to resize"></div><aside class="chat-wrap"><section class="chat"><div class="chat-head"><div class="avatar">🐰</div><div><strong>Assistant</strong><small>Commands require your confirmation</small></div><button class="settings" id="settingsPanel">⚙</button></div><div class="context" id="attachments"><div class="context-empty">🫧 No context attached</div></div><div class="messages" id="messages"><div class="message assistant">Hi! Open files or create Terminals, then attach their content to me when needed.</div></div><div class="composer"><div class="hint">Tabs with enabled context will be automatically attached to AI</div><textarea class="prompt" id="prompt" placeholder="e.g.: Explain the current file"></textarea><div class="compose-row"><span class="hint">Enter</span><button class="ask" id="ask">Send ✦</button></div></div></section></aside>
+  </div>
+  <div class="modal-backdrop" id="settingsModal"><form class="modal" id="settingsForm"><h2>Assistant Settings</h2><p>Use any OpenAI-compatible service.</p><label for="base-url">API Base URL</label><input id="base-url" required placeholder="https://api.openai.com/v1"><label for="model-name">Model Name</label><input id="model-name" required placeholder="e.g. gpt-4.1-mini"><label for="api-key">API Key</label><input id="api-key" type="password" placeholder="Leave empty to keep saved key"><div class="modal-actions"><button type="button" id="cancelSettings">Cancel</button><button class="save-settings" type="submit">Save Settings</button></div></form></div><div class="file-menu" id="file-menu"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let token = '', tabs = [], active = null, history = [], toolRound = null, saveTimer = null, stateDirty = false, stateSaving = false;
+    const contextEnabled = new Set();
+    const expanded = new Set(['']);
+    const uid = () => Math.random().toString(36).slice(2, 10);
+    function stateSnapshot() { return {
+      tabs: tabs.map((tab) => ({ id: tab.id, kind: tab.kind, name: tab.name, path: tab.path, content: tab.kind === 'file' ? tab.content : undefined, dirty: !!tab.dirty, output: tab.kind === 'terminal' ? (tab.output || '').slice(-10000) : undefined, context: contextEnabled.has(tab.id) })),
+      active, expanded: [...expanded], left: getComputedStyle(document.documentElement).getPropertyValue('--left-pane').trim(), right: getComputedStyle(document.documentElement).getPropertyValue('--right-pane').trim()
+    }; }
+    function saveState() {
+      if (!token) return;
+      stateDirty = true;
+      if (!stateSaving) void flushState();
+    }
+    async function flushState() {
+      stateSaving = true;
+      while (stateDirty) {
+        stateDirty = false;
+        try { await api('/api/ui-state', { method: 'PUT', body: JSON.stringify({ state: stateSnapshot() }) }); }
+        catch (_) { /* A transient network failure will be retried after the next state change. */ }
+      }
+      stateSaving = false;
+    }
+    function scheduleStateSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveState, 250); }
+    function applyPaneWidths(state) { if (state?.left) document.documentElement.style.setProperty('--left-pane', state.left); if (state?.right) document.documentElement.style.setProperty('--right-pane', state.right); }
+    const headers = () => ({ 'X-Session-Token': token, 'Content-Type': 'application/json' });
+    async function api(url, options = {}) {
+      const response = await fetch(url, { ...options, headers: { ...headers(), ...(options.headers || {}) } });
+      if (!response.ok) throw new Error(await response.text());
+      return response.json();
+    }
+    function current() { return tabs.find((tab) => tab.id === active); }
+    function renderAttachments() {
+      const container = $('attachments');
+      if (tabs.length === 0) {
+        container.innerHTML = '<div class="context-empty">🫧 No context attached</div>';
+        return;
+      }
+      let html = '<div class="context-list">';
+      for (const tab of tabs) {
+        const enabled = contextEnabled.has(tab.id);
+        html += `<div class="context-item ${enabled ? '' : 'disabled'}" data-id="${tab.id}"><span>${tab.kind === 'terminal' ? '▣' : '⌁'}</span><span class="name">${tab.name}</span><span class="toggle"></span></div>`;
+      }
+      html += '</div>';
+      container.innerHTML = html;
+      container.querySelectorAll('.context-item').forEach(item => {
+        item.onclick = () => {
+          const id = item.dataset.id;
+          contextEnabled.has(id) ? contextEnabled.delete(id) : contextEnabled.add(id);
+          renderAttachments(); saveState();
+        };
+      });
+    }
+    function renderTabs() {
+      const bar = $('tabbar');
+      bar.querySelectorAll('.tab').forEach((element) => element.remove());
+      for (const tab of tabs) {
+        const button = document.createElement('button');
+        button.className = `tab ${tab.id === active ? 'active' : ''}`;
+        button.innerHTML = `${tab.kind === 'terminal' ? '▣' : '⌁'} <span>${tab.name}</span><span class="x">×</span>`;
+        button.onclick = (event) => event.target.classList.contains('x') ? closeTab(tab.id) : activate(tab.id);
+        bar.insertBefore(button, $('new-terminal'));
+      }
+    }
+    function buildFilePanel(tab) {
+      const panel = document.createElement('section'); panel.className = 'panel file-panel';
+      panel.innerHTML = '<textarea class="editor" spellcheck="false"></textarea><div class="editor-bottom"><button class="pill primary">Save</button><button class="pill">✦ Attach to AI</button><button class="pill peach">Download</button><button class="pill">Move/Rename</button><button class="pill peach">Delete</button><span class="status">Opened</span></div>';
+      const editor = panel.querySelector('.editor'); const buttons = panel.querySelectorAll('button'); const status = panel.querySelector('.status'); editor.value = tab.content;
+      editor.oninput = () => { tab.content = editor.value; tab.dirty = true; status.textContent = 'Unsaved changes'; scheduleStateSave(); };
+      buttons[0].onclick = async () => { await api(`/api/files/content?path=${encodeURIComponent(tab.path)}&content=${encodeURIComponent(tab.content)}`, { method: 'PUT' }); tab.dirty = false; status.textContent = 'Saved'; saveState(); };
+      buttons[1].onclick = () => { contextEnabled.has(tab.id) ? contextEnabled.delete(tab.id) : contextEnabled.add(tab.id); renderAttachments(); saveState(); };
+      buttons[2].onclick = () => downloadFile(tab); buttons[3].onclick = () => moveFile(tab); buttons[4].onclick = () => deleteFile(tab);
+      return panel;
+    }
+    function buildTerminalPanel(tab) {
+      const panel = document.createElement('section'); panel.className = 'panel terminal-panel';
+      panel.innerHTML = '<div class="term-head"><span class="dots"><i></i><i></i><i></i></span>Terminal <span class="term-status">Connecting…</span></div><div class="xterm-host"></div>';
+      const host = panel.querySelector('.xterm-host'), status = panel.querySelector('.term-status');
+      if (!window.Terminal || !window.FitAddon) { host.textContent = 'Unable to load terminal component. Please check your network and refresh.'; return panel; }
+      const term = new window.Terminal({ cursorBlink: true, convertEol: true, fontFamily: 'Cascadia Mono, Consolas, monospace', fontSize: 13, theme: { background: '#332d3d', foreground: '#f3e9f8', cursor: '#f6c8e4', selectionBackground: '#765b7d' } });
+      const fit = new window.FitAddon.FitAddon(); term.loadAddon(fit); term.open(host); tab.term = term; tab.fit = fit;
+      const socket = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/terminal?token=${encodeURIComponent(token)}&session=${tab.id}`); tab.ws = socket;
+      const resize = () => { if (!panel.classList.contains('active')) return; fit.fit(); if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'resize', cols: term.cols, rows: term.rows })); };
+      socket.onopen = () => { status.textContent = '● Connected'; resize(); if (tab.id === active) term.focus(); };
+      if (tab.output) term.write(tab.output);
+      socket.onmessage = (event) => { tab.output += event.data; term.write(event.data); scheduleStateSave(); };
+      socket.onclose = () => { status.textContent = '○ Disconnected'; term.write('\r\n\x1b[31mTerminal disconnected.\x1b[0m'); };
+      term.onData((data) => { if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'input', data })); });
+      tab.resizeObserver = new ResizeObserver(resize); tab.resizeObserver.observe(host);
+      return panel;
+    }
+    function renderArea() {
+      $('launcher').style.display = active ? 'none' : 'grid';
+      for (const tab of tabs) {
+        if (!tab.panel) { tab.panel = tab.kind === 'terminal' ? buildTerminalPanel(tab) : buildFilePanel(tab); $('area').append(tab.panel); }
+        tab.panel.classList.toggle('active', tab.id === active);
+      }
+      const tab = current();
+      if (tab?.term) setTimeout(() => { tab.fit.fit(); tab.term.focus(); }, 0);
+    }
+    function activate(id) { active = id; renderTabs(); renderArea(); renderAttachments(); saveState(); }
+    function closeTab(id, skipConfirm = false) {
+      const tab = tabs.find((item) => item.id === id); if (!skipConfirm && tab?.dirty && !confirm('This file has unsaved changes. Close anyway?')) return;
+      tab?.ws?.close(); tab?.resizeObserver?.disconnect(); tab?.term?.dispose(); tab?.panel?.remove(); contextEnabled.delete(id);
+      tabs = tabs.filter((item) => item.id !== id);
+      if (active === id) active = tabs.at(-1)?.id || null; renderTabs(); renderArea(); renderAttachments(); saveState();
+    }
+    function newTerminal() { const count = tabs.filter((tab) => tab.kind === 'terminal').length + 1; const tab = { id: `term_${uid()}`, kind: 'terminal', name: `Terminal ${count}`, output: '' }; tabs.push(tab); activate(tab.id); }
+    async function tree() {
+      let html = '';
+      async function visit(path, depth) {
+        const items = await api(`/api/files?path=${encodeURIComponent(path)}`);
+        for (const item of items) {
+          const open = expanded.has(item.path), indent = 7 + depth * 15;
+          html += `<div class="item ${item.directory ? 'folder' : ''}" style="padding-left:${indent}px" data-path="${item.path}" data-dir="${item.directory}">${item.directory ? (open ? '▾' : '▸') : '⌁'} ${item.name}</div>`;
+          if (item.directory && open) await visit(item.path, depth + 1);
+        }
+      }
+      try { await visit('', 0); } catch (error) { html = `<div class="item">Unable to read files: ${error.message}</div>`; }
+      $('files').innerHTML = html || '<div class="item">This workspace is empty</div>';
+      $('files').querySelectorAll('[data-path]').forEach((element) => {
+        element.onclick = async () => {
+          const path = element.dataset.path;
+          if (element.dataset.dir === 'true') { expanded.has(path) ? expanded.delete(path) : expanded.add(path); saveState(); await tree(); return; }
+          const old = tabs.find((tab) => tab.kind === 'file' && tab.path === path); if (old) { activate(old.id); return; }
+          try { const data = await api(`/api/files/content?path=${encodeURIComponent(path)}`); const tab = { id: `file_${uid()}`, kind: 'file', name: path.split('/').pop(), path, content: data.content, dirty: false }; tabs.push(tab); activate(tab.id); } catch (error) { alert(`Unable to open file: ${error.message}`); }
+        };
+        element.oncontextmenu = (event) => { event.preventDefault(); showFileMenu(event, element.dataset.path, element.dataset.dir === 'true'); };
+      });
+    }
+    async function downloadFile(tab) { const response = await fetch(`/api/files/download?path=${encodeURIComponent(tab.path)}`, { headers: { 'X-Session-Token': token } }); if (!response.ok) return alert(await response.text()); const link = document.createElement('a'); link.href = URL.createObjectURL(await response.blob()); link.download = tab.name; link.click(); URL.revokeObjectURL(link.href); }
+    async function moveFile(tab) { const target = prompt('Target relative path', tab.path); if (target && target !== tab.path) { await renamePath(tab.path, target); } }
+    async function deleteFile(tab) { if (confirm(`Delete ${tab.path}?`)) { await deletePath(tab.path); } }
+    async function renamePath(path, target) {
+      await api('/api/files/move', { method: 'POST', body: JSON.stringify({ source: path, destination: target }) });
+      for (const tab of tabs.filter((item) => item.kind === 'file' && item.path === path)) { tab.path = target; tab.name = target.split('/').pop(); }
+      renderTabs(); saveState(); await tree();
+    }
+    async function deletePath(path) {
+      await api(`/api/files?path=${encodeURIComponent(path)}`, { method: 'DELETE' });
+      for (const tab of [...tabs.filter((item) => item.kind === 'file' && item.path === path)]) closeTab(tab.id, true);
+      saveState(); await tree();
+    }
+    function showFileMenu(event, path, isDirectory) {
+      const menu = $('file-menu'); menu.innerHTML = '';
+      const add = (label, action, danger = false) => { const button = document.createElement('button'); button.textContent = label; if (danger) button.className = 'danger'; button.onclick = async () => { menu.classList.remove('open'); try { await action(); } catch (error) { alert(`Operation failed: ${error.message}`); } }; menu.append(button); };
+      add('Rename', async () => { const parts = path.split('/'); const name = prompt('New name', parts.at(-1)); if (!name || name === parts.at(-1)) return; parts[parts.length - 1] = name; await renamePath(path, parts.join('/')); });
+      if (!isDirectory) add('Download', async () => downloadFile({ path, name: path.split('/').pop() }));
+      add('Delete', async () => { if (confirm(`Delete ${path}?`)) await deletePath(path); }, true);
+      menu.style.left = `${Math.min(event.clientX, window.innerWidth - 140)}px`; menu.style.top = `${Math.min(event.clientY, window.innerHeight - 120)}px`; menu.classList.add('open');
+    }
+    function message(role, text) { const element = document.createElement('div'); element.className = `message ${role}`; element.textContent = text; $('messages').append(element); $('messages').scrollTop = $('messages').scrollHeight; }
+    const MAX_CONTEXT_CHARS = 10000;
+    function appendToolCard(toolCall, round) {
+      const div = document.createElement('div');
+      div.className = 'tool-call';
+      div.innerHTML = '<div class="tool-header">⚡ AI requests to execute command in an independent Bash environment</div><div class="tool-command"></div><div class="tool-session">Working directory: current workspace (will not write to your Terminal)</div><div class="tool-actions"><button class="tool-run">▶ Review and Execute</button><button class="tool-cancel">Reject</button></div><div class="tool-output" style="display:none;"></div>';
+      div.querySelector('.tool-command').textContent = toolCall.command;
+      const outputEl = div.querySelector('.tool-output');
+      const complete = async (result, label) => {
+        round.results.set(toolCall.id, result);
+        div.querySelector('.tool-run').disabled = true;
+        div.querySelector('.tool-cancel').disabled = true;
+        div.querySelector('.tool-run').textContent = label;
+        outputEl.style.display = 'block';
+        outputEl.textContent = `Exit code: ${result.returncode}\n${result.output || '(no output)'}`;
+        if (round.results.size === round.calls.length && toolRound === round) {
+          const summary = [];
+          for (const call of round.calls) {
+            const toolResult = round.results.get(call.id);
+            const output = (toolResult.output || '(no output)').slice(0, 20000);
+            const content = `Exit code: ${toolResult.returncode}\nOutput:\n${output}`;
+            history.push({ role: 'tool', tool_call_id: call.id, content });
+            summary.push(`Command: ${call.command}\n${content}`);
+          }
+          // Some OpenAI-compatible gateways do not reliably expose role=tool
+          // content to the next turn. Keep the standard tool message above and
+          // add an explicit application-produced recap for compatibility.
+          history.push({ role: 'user', content: `[Reviewed Bash tool results]\n${summary.join('\n\n')}` });
+          toolRound = null;
+          await requestAssistant();
+        }
+      };
+      div.querySelector('.tool-run').onclick = async () => {
+        outputEl.style.display = 'block'; outputEl.textContent = 'Executing…';
+        try {
+          const result = await api('/api/ai/execute-command', { method: 'POST', body: JSON.stringify({ command: toolCall.command }) });
+          await complete(result, '✓ Executed');
+        } catch (err) {
+          await complete({ output: `Execution request failed: ${err.message}`, returncode: -1 }, 'Execution failed');
+        }
+      };
+      div.querySelector('.tool-cancel').onclick = () => complete({ output: 'User rejected this command.', returncode: -1 }, 'Rejected');
+      $('messages').append(div);
+    }
+
+    async function requestAssistant() {
+      if (toolRound) return;
+      // Create streaming message element
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message assistant';
+      const reasoningDiv = document.createElement('div');
+      reasoningDiv.className = 'reasoning';
+      reasoningDiv.style.display = 'none';
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'content';
+      msgDiv.appendChild(reasoningDiv); msgDiv.appendChild(contentDiv);
+      $('messages').append(msgDiv); $('messages').scrollTop = $('messages').scrollHeight;
+      try {
+        const response = await fetch('/api/ai/chat', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Session-Token': token },
+          body: JSON.stringify({ messages: history })
+        });
+        if (!response.ok) { contentDiv.textContent = `Connection failed: ${await response.text()}`; return; }
+        const reader = response.body.getReader(), decoder = new TextDecoder();
+        let fullContent = '', fullReasoning = '', toolCalls = [], eventBuffer = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          eventBuffer += decoder.decode(value, { stream: true });
+          const events = eventBuffer.split('\n\n'); eventBuffer = events.pop();
+          for (const event of events) {
+            const line = event.split('\n').find((item) => item.startsWith('data: '));
+            if (!line) continue;
+            const data = line.substring(6); if (data === '[DONE]') break;
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.error) { contentDiv.textContent = `Model call failed: ${parsed.error}`; continue; }
+              if (parsed.content) { fullContent += parsed.content; contentDiv.textContent = fullContent; }
+              if (parsed.reasoning) { fullReasoning += parsed.reasoning; reasoningDiv.textContent = fullReasoning; reasoningDiv.style.display = 'block'; reasoningDiv.classList.remove('collapsed'); }
+              for (const toolCall of parsed.tool_calls || []) {
+                const existing = toolCalls.find((item) => item.id === toolCall.id);
+                if (existing) Object.assign(existing, toolCall); else toolCalls.push(toolCall);
+              }
+              if (parsed.finished) {
+                if (fullReasoning && reasoningDiv.style.display === 'block') { reasoningDiv.classList.add('collapsed'); reasoningDiv.onclick = () => reasoningDiv.classList.toggle('collapsed'); }
+                if (toolCalls.length) {
+                  history.push({ role: 'assistant', content: fullContent, tool_calls: toolCalls.map((call) => ({ id: call.id, type: 'function', function: { name: 'run_bash_command', arguments: JSON.stringify({ command: call.command }) } })) });
+                  const round = { calls: toolCalls, results: new Map() }; toolRound = round;
+                  toolCalls.forEach((call) => appendToolCard(call, round));
+                } else {
+                  history.push({ role: 'assistant', content: fullContent });
+                }
+              }
+            } catch (_) { /* Ignore malformed incomplete provider events. */ }
+          }
+          $('messages').scrollTop = $('messages').scrollHeight;
+        }
+      } catch (error) { contentDiv.textContent = `Connection failed: ${error.message}`; }
+    }
+
+    async function ask() {
+      const text = $('prompt').value.trim(); if (!text || toolRound) return;
+      message('user', text); history.push({ role: 'user', content: text }); $('prompt').value = '';
+      const enabledTabs = tabs.filter(tab => contextEnabled.has(tab.id));
+      const ctxAttachments = enabledTabs.map(tab => {
+        if (tab.kind === 'file') {
+          const truncated = tab.content.length > MAX_CONTEXT_CHARS ? tab.content.slice(0, MAX_CONTEXT_CHARS) : tab.content;
+          return { name: `File ${tab.path}`, content: truncated + (tab.content.length > MAX_CONTEXT_CHARS ? '\n…(truncated, first 10000 chars)' : '') };
+        }
+        const output = tab.output || '(No terminal output yet)';
+        const truncated = output.length > MAX_CONTEXT_CHARS ? output.slice(-MAX_CONTEXT_CHARS) : output;
+        return { name: `Terminal ${tab.name}`, content: truncated + (output.length > MAX_CONTEXT_CHARS ? '\n…(truncated, last 10000 chars)' : '') };
+      });
+      history.push(...ctxAttachments.map((item) => ({ role: 'user', content: `[User attached ${item.name}]\n${item.content}` })));
+      await requestAssistant();
+    }
+    function setupSplitter(id, side) {
+      const splitter = $(id);
+      splitter.onpointerdown = (event) => {
+        const startX = event.clientX, root = document.documentElement;
+        const start = parseFloat(getComputedStyle(root).getPropertyValue(side === 'left' ? '--left-pane' : '--right-pane'));
+        splitter.classList.add('dragging'); splitter.setPointerCapture(event.pointerId);
+        splitter.onpointermove = (move) => {
+          const shellWidth = document.querySelector('.shell').clientWidth;
+          const other = parseFloat(getComputedStyle(root).getPropertyValue(side === 'left' ? '--right-pane' : '--left-pane'));
+          const value = side === 'left' ? start + move.clientX - startX : start - (move.clientX - startX);
+          root.style.setProperty(side === 'left' ? '--left-pane' : '--right-pane', `${Math.max(180, Math.min(value, shellWidth - other - 400))}px`);
+        };
+        splitter.onpointerup = () => { splitter.classList.remove('dragging'); splitter.onpointermove = null; splitter.onpointerup = null; saveState(); };
+      };
+    }
+    async function restoreState() {
+      let state = null; try { state = (await api('/api/ui-state')).state; } catch (_) { /* Start empty if the server state is unavailable. */ }
+      if (!state) return;
+      applyPaneWidths(state); expanded.clear(); (state.expanded || ['']).forEach((path) => expanded.add(path));
+      for (const saved of state.tabs || []) {
+        if (saved.kind === 'terminal') tabs.push({ id: saved.id, kind: 'terminal', name: saved.name, output: saved.output || '' });
+        if (saved.kind === 'file' && saved.path) {
+          try {
+            const content = saved.dirty ? saved.content : (await api(`/api/files/content?path=${encodeURIComponent(saved.path)}`)).content;
+            tabs.push({ id: saved.id, kind: 'file', name: saved.name, path: saved.path, content, dirty: !!saved.dirty });
+          } catch (_) { /* File was moved or deleted since the last visit. */ }
+        }
+        if (saved.context) contextEnabled.add(saved.id);
+      }
+      active = tabs.some((tab) => tab.id === state.active) ? state.active : tabs.at(-1)?.id || null;
+      renderTabs(); renderArea(); renderAttachments();
+    }
+    async function start() {
+      const boot = await (await fetch('/api/bootstrap')).json(); token = boot.token;
+      setupSplitter('left-splitter', 'left'); setupSplitter('right-splitter', 'right');
+      await restoreState(); await tree();
+    }
+    $('new-terminal').onclick = newTerminal; $('launch-terminal').onclick = newTerminal; $('refresh').onclick = tree;
+    $('newfile').onclick = async () => { const path = prompt('Relative path for new file'); if (path) { await api(`/api/files/content?path=${encodeURIComponent(path)}&content=`, { method: 'PUT' }); tree(); } };
+    $('newdir').onclick = async () => { const path = prompt('Relative path for new folder'); if (path) { await api(`/api/files/directory?path=${encodeURIComponent(path)}`, { method: 'POST' }); tree(); } };
+    $('upload-trigger').onclick = () => $('upload').click(); $('upload').onchange = async (event) => { const file = event.target.files[0]; if (!file) return; const form = new FormData(); form.append('upload', file); const response = await fetch('/api/files/upload', { method: 'POST', headers: { 'X-Session-Token': token }, body: form }); if (!response.ok) alert(await response.text()); tree(); };
+    document.addEventListener('click', () => $('file-menu').classList.remove('open')); $('ask').onclick = ask; $('prompt').onkeydown = (event) => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); ask(); } };
+    $('settingsPanel').onclick = async () => { const settings = await api('/api/settings'); $('base-url').value = settings.base_url; $('model-name').value = settings.model; $('api-key').value = ''; $('settingsModal').classList.add('open'); };
+    $('cancelSettings').onclick = () => $('settingsModal').classList.remove('open'); $('settingsModal').onclick = (event) => { if (event.target === $('settingsModal')) $('settingsModal').classList.remove('open'); };
+    $('settingsForm').onsubmit = async (event) => { event.preventDefault(); await api('/api/settings', { method: 'PUT', body: JSON.stringify({ base_url: $('base-url').value.trim(), model: $('model-name').value.trim(), api_key: $('api-key').value }) }); $('api-key').value = ''; $('settingsModal').classList.remove('open'); alert('Model settings saved'); };
+    start().catch((error) => { $('files').textContent = `Startup failed: ${error.message}`; });
+  </script>
+</body>
+</html>
