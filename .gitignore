@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+build/
+dist/
+*.egg-info/
+
+# Local PipkinPad runtime state and audit history
+.pipkinpad-audit.jsonl
+.pipkinpad-ui-state.json
+.ai-workbench-audit.jsonl
