@@ -14,6 +14,7 @@ import uvicorn
 
 from .app import create_app
 from .config import AISettings, SettingsStore
+from .auth import clear_password, configure_password, password_configured
 
 
 def main() -> None:
@@ -24,6 +25,9 @@ def main() -> None:
     start.add_argument("--host", default="127.0.0.1", help="Bind address; use 0.0.0.0 only on a trusted network")
     config = subparsers.add_parser("config", help="View or update AI provider settings")
     config.add_argument("--base-url"); config.add_argument("--model"); config.add_argument("--api-key")
+    password_group = config.add_mutually_exclusive_group()
+    password_group.add_argument("--password", help="Set or replace the web login password")
+    password_group.add_argument("--clear-password", action="store_true", help="Disable web password protection")
     subparsers.add_parser("clear-config", help="Remove saved provider settings")
     args = parser.parse_args()
     store = SettingsStore()
@@ -31,10 +35,17 @@ def main() -> None:
         store.clear(); print("Saved configuration cleared."); return
     if args.command == "config":
         old = store.load()
-        if any((args.base_url, args.model, args.api_key)):
-            store.save(AISettings(args.base_url or old.base_url, args.model or old.model, api_key=args.api_key or old.api_key, temperature=old.temperature))
+        if any((args.base_url, args.model, args.api_key, args.password is not None, args.clear_password)):
+            old.base_url = args.base_url or old.base_url
+            old.model = args.model or old.model
+            old.api_key = args.api_key or old.api_key
+            if args.password is not None:
+                configure_password(old, args.password)
+            elif args.clear_password:
+                clear_password(old)
+            store.save(old)
         public = store.load().public()
-        print(f"Base URL: {public['base_url']}\nModel: {public['model']}\nAPI key configured: {public['api_key_configured']}")
+        print(f"Base URL: {public['base_url']}\nModel: {public['model']}\nAPI key configured: {public['api_key_configured']}\nPassword protection: {password_configured(store.load())}")
         return
     url = f"http://127.0.0.1:{args.port}"
     if os.environ.get("AI_WORKBENCH_NO_BROWSER") != "1":

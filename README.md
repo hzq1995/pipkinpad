@@ -28,6 +28,25 @@ pipkinpad config
 pipkinpad clear-config
 ```
 
+### Password protection
+
+Set a password before starting the server to require login in the browser:
+
+```bash
+pipkinpad config --password YOUR_PASSWORD
+```
+
+After a successful login, PipkinPad remembers that browser for 30 days using an
+HTTP-only signed cookie. Changing the password invalidates previous logins. To
+return to password-free local access:
+
+```bash
+pipkinpad config --clear-password
+```
+
+The password is never stored directly. Its salted PBKDF2 hash and the cookie
+signing secret are kept inside PipkinPad's encrypted local settings file.
+
 You can also fill in the "Configure API" panel on the app's right sidebar. Connection parameters and API keys are encrypted and saved to a local config file; the master encryption key is stored in the operating system credential store.
 
 ## Security Model

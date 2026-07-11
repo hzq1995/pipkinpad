@@ -10,10 +10,11 @@ import subprocess
 from dataclasses import asdict
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi import FastAPI, File, Form, Header, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 
 from .ai import AIClient, BASH_TOOL, COMMAND_BLOCK
+from .auth import COOKIE_MAX_AGE, COOKIE_NAME, issue_cookie, password_configured, verify_cookie, verify_password
 from .audit import AuditLog
 from .config import AISettings, SettingsStore
 from .files import FileService
@@ -33,6 +34,16 @@ def create_app(root: Path, settings_store: SettingsStore | None = None) -> FastA
     token = new_session_token()
     app = FastAPI(title="PipkinPad", docs_url=None, redoc_url=None)
     app.state.session_token = token
+
+    def browser_authorized(cookie: str | None) -> bool:
+        return verify_cookie(settings_store.load(), cookie)
+
+    @app.middleware("http")
+    async def require_login(request: Request, call_next):
+        if request.url.path.startswith("/api/") and request.url.path != "/api/login":
+            if not browser_authorized(request.cookies.get(COOKIE_NAME)):
+                return JSONResponse({"detail": "Authentication required"}, status_code=401)
+        return await call_next(request)
 
     def authorized(value: str | None) -> None:
         if value != token:
@@ -58,8 +69,29 @@ def create_app(root: Path, settings_store: SettingsStore | None = None) -> FastA
         return HTMLResponse("Workspace boundary violation", status_code=403)
 
     @app.get("/")
-    async def index():
-        return HTMLResponse((Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8"))
+    async def index(request: Request):
+        static = Path(__file__).parent / "static"
+        page = "index.html" if browser_authorized(request.cookies.get(COOKIE_NAME)) else "login.html"
+        return HTMLResponse((static / page).read_text(encoding="utf-8"))
+
+    @app.post("/api/login")
+    async def login(request: Request):
+        settings = settings_store.load()
+        if not password_configured(settings):
+            return {"ok": True}
+        try:
+            body = await request.json()
+        except json.JSONDecodeError:
+            raise HTTPException(400, "Invalid request")
+        password = body.get("password") if isinstance(body, dict) else None
+        if not isinstance(password, str) or not verify_password(settings, password):
+            audit.record("auth.login_failed", client=request.client.host if request.client else "unknown")
+            raise HTTPException(401, "Invalid password")
+        response = JSONResponse({"ok": True})
+        response.set_cookie(COOKIE_NAME, issue_cookie(settings), max_age=COOKIE_MAX_AGE,
+                            httponly=True, samesite="lax", secure=request.url.scheme == "https", path="/")
+        audit.record("auth.login")
+        return response
 
     @app.get("/.well-known/appspecific/com.chrome.devtools.json")
     async def chrome_devtools():
@@ -229,7 +261,7 @@ def create_app(root: Path, settings_store: SettingsStore | None = None) -> FastA
 
     @app.websocket("/ws/terminal")
     async def terminal_socket(socket: WebSocket):
-        if socket.query_params.get("token") != token:
+        if not browser_authorized(socket.cookies.get(COOKIE_NAME)) or socket.query_params.get("token") != token:
             await socket.close(code=1008); return
         session_id = socket.query_params.get("session", "default")
         if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", session_id):

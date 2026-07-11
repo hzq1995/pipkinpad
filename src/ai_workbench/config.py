@@ -20,6 +20,9 @@ class AISettings:
     model: str = "gpt-4.1-mini"
     api_key: str = ""
     temperature: float | None = None
+    password_salt: str = ""
+    password_hash: str = ""
+    auth_secret: str = ""
 
     def public(self) -> dict:
         return {"base_url": self.base_url, "model": self.model, "temperature": self.temperature,

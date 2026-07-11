@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pipkinpad"
-version = "0.1.0"
+version = "0.1.1"
 description = "PipkinPad: a local, AI-assisted file manager and terminal workspace."
 readme = "README.md"
 requires-python = ">=3.10"
