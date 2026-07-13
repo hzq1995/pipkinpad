@@ -10,7 +10,7 @@ cd your-project
 pipkinpad start
 ```
 
-The app listens on `127.0.0.1:8765` and opens the browser automatically. Use `--port 9000` to change the port. The startup directory is the workspace root — the service and AI cannot access paths outside it.
+The app listens on `127.0.0.1:8765` by default. Use `--port 9000` to change the port. By default the browser is not opened automatically; add `--browser` to open it on start. The startup directory is the workspace root — the service and AI cannot access paths outside it.
 
 To use the same workbench from another device on a trusted network, start it on the host machine with:
 

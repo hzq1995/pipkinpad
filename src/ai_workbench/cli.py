@@ -20,9 +20,10 @@ from .auth import clear_password, configure_password, password_configured
 def main() -> None:
     parser = argparse.ArgumentParser(prog="pipkinpad")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    start = subparsers.add_parser("start", help="Start PipkinPad in the current directory")
-    start.add_argument("--port", type=int, default=8765)
-    start.add_argument("--host", default="127.0.0.1", help="Bind address; use 0.0.0.0 only on a trusted network")
+    start = subparsers.add_parser("start", help="Start PipkinPad (use 'start -h' for port, host, browser options)")
+    start.add_argument("--port", type=int, default=8765, help="Port to listen on (default: 8765)")
+    start.add_argument("--host", default="127.0.0.1", help="Bind address (default: 127.0.0.1); use 0.0.0.0 only on a trusted network")
+    start.add_argument("--browser", action="store_true", help="Automatically open the browser on start")
     config = subparsers.add_parser("config", help="View or update AI provider settings")
     config.add_argument("--base-url"); config.add_argument("--model"); config.add_argument("--api-key")
     password_group = config.add_mutually_exclusive_group()
@@ -48,7 +49,7 @@ def main() -> None:
         print(f"Base URL: {public['base_url']}\nModel: {public['model']}\nAPI key configured: {public['api_key_configured']}\nPassword protection: {password_configured(store.load())}")
         return
     url = f"http://127.0.0.1:{args.port}"
-    if os.environ.get("AI_WORKBENCH_NO_BROWSER") != "1":
+    if args.browser and os.environ.get("AI_WORKBENCH_NO_BROWSER") != "1":
         threading.Timer(0.7, lambda: webbrowser.open(url)).start()
     
     # Use uvicorn Config and Server for proper signal handling
