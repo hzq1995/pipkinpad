@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css">
   <style>
     :root { --ink:#493d57; --muted:#8d8099; --line:#e8ddeb; --bg:#f8f4fb; --paper:#fffaff; --lilac:#f2e8ff; --pink:#ffe1ee; --peach:#ffeada; --blue:#e2f3ff; --accent:#a276cf; --accent-hover:#8b5fc0; --terminal:#332d3d; --left-pane:244px; --right-pane:340px; --shadow-sm:0 2px 8px rgba(162,118,207,0.08); --shadow-md:0 4px 16px rgba(162,118,207,0.12); --shadow-lg:0 8px 32px rgba(162,118,207,0.16); }
-    * { box-sizing:border-box; } body { margin:0; height:100vh; min-width:940px; overflow:hidden; background:var(--bg); color:var(--ink); font:14px ui-rounded,"Nunito",system-ui,sans-serif; }
+    * { box-sizing:border-box; } html,body { overscroll-behavior:none; } body { margin:0; height:100vh; height:100dvh; min-width:0; overflow:hidden; background:var(--bg); color:var(--ink); font:14px ui-rounded,"Nunito",system-ui,sans-serif; }
     button,input,textarea { font:inherit; } button { border:0; color:var(--ink); cursor:pointer; transition:all 0.2s cubic-bezier(0.4,0,0.2,1); } button:hover { filter:brightness(.97); transform:translateY(-1px); box-shadow:var(--shadow-sm); } button:active { transform:translateY(0); box-shadow:none; }
     .top { height:42px; padding:0 16px; display:flex; align-items:center; gap:22px; background:#fffafd; border-bottom:1px solid var(--line); user-select:none; box-shadow:0 1px 3px rgba(162,118,207,0.05); }
     .brand { font-weight:850; color:#8058a8; }.brand b { display:inline-grid; place-items:center; width:24px; height:24px; margin-right:6px; border-radius:8px; background:var(--pink); }.work { margin-left:auto; border-radius:99px; padding:5px 10px; background:var(--lilac); color:var(--muted); font-size:12px; }
@@ -16,6 +16,7 @@
     .files { padding:14px 10px; overflow:auto; background:#fffafd; border-right:1px solid var(--line); }.section-title { display:flex; align-items:center; justify-content:space-between; margin:0 3px 12px; color:var(--muted); font-size:11px; font-weight:800; letter-spacing:1px; }.tools { display:flex; gap:6px; margin-bottom:10px; }.tools button,.round { border-radius:9px; padding:6px 8px; background:var(--pink); font-size:12px; border:1px solid rgba(162,118,207,0.1); }.tools button:nth-child(2),.round.blue { background:var(--blue); }.tools button:hover,.round:hover { box-shadow:var(--shadow-sm); }.tree .item { padding:7px; border-radius:8px; cursor:pointer; word-break:break-all; border:1px solid transparent; transition:all 0.15s; }.tree .item:hover { background:var(--lilac); border-color:rgba(162,118,207,0.15); box-shadow:var(--shadow-sm); }.tree .folder { font-weight:700; color:#725284; }.upload { display:none; }
     .center { min-width:0; display:flex; flex-direction:column; padding:10px; background:var(--bg); }.tabbar { height:39px; display:flex; align-items:end; gap:4px; padding:0 7px; background:#f3edf7; border:1px solid var(--line); border-bottom:0; border-radius:14px 14px 0 0; overflow:auto; }.tab { height:32px; max-width:220px; display:flex; align-items:center; gap:7px; padding:0 9px; border:1px solid transparent; border-radius:9px 9px 0 0; background:transparent; color:var(--muted); font-size:12px; white-space:nowrap; transition:all 0.15s; }.tab:hover { background:rgba(162,118,207,0.05); }.tab.active { background:var(--paper); border-color:var(--line); border-bottom-color:var(--paper); color:var(--ink); font-weight:700; box-shadow:0 -2px 8px rgba(162,118,207,0.1); }.tab .x { padding:0 2px; color:#aa98b4; border-radius:4px; transition:all 0.15s; }.tab .x:hover { background:rgba(162,118,207,0.1); color:var(--accent); }.new-tab { margin-left:2px; width:28px; height:27px; border-radius:8px; background:var(--pink); font-size:18px; border:1px solid rgba(162,118,207,0.1); }.area { position:relative; flex:1; min-height:0; border:1px solid var(--line); border-radius:0 0 14px 14px; background:var(--paper); overflow:hidden; box-shadow:0 8px 24px #b687bc1c; }.launcher { height:100%; display:grid; place-content:center; justify-items:center; gap:13px; color:var(--muted); text-align:center; }.launcher .spark { font-size:38px; }.launcher h2 { margin:0; color:var(--ink); font-size:18px; }.launcher p { margin:0; max-width:330px; font-size:13px; line-height:1.6; }.launcher button { padding:10px 15px; border-radius:11px; background:var(--lilac); font-weight:700; border:1px solid rgba(162,118,207,0.1); }.panel { position:absolute; inset:0; display:none; }.panel.active { display:flex; }
     .file-panel { flex-direction:column; }.editor { flex:1; width:100%; border:0; outline:0; resize:none; padding:17px; background:var(--paper); color:#4d4557; font:13px/1.7 ui-monospace,"Cascadia Code",monospace; }.editor-bottom { display:flex; align-items:center; gap:7px; padding:8px 11px; border-top:1px solid var(--line); background:#fffafd; }.pill { padding:6px 10px; border-radius:99px; background:var(--lilac); font-size:12px; border:1px solid rgba(162,118,207,0.1); transition:all 0.15s; }.pill:hover { box-shadow:var(--shadow-sm); }.pill.primary { background:var(--accent); color:white; border-color:var(--accent); }.pill.primary:hover { background:var(--accent-hover); }.pill.peach { background:var(--peach); }.status { margin-left:auto; color:var(--muted); font-size:11px; }
+    .editor-stage { position:relative; flex:1; min-height:0; overflow:hidden; background:#fdfcfd; }.editor-stage .editor,.syntax-layer { position:absolute; inset:0; width:100%; height:100%; margin:0; padding:12px 14px; border:0; overflow:auto; white-space:pre; tab-size:4; font:13px/1.65 ui-monospace,"Cascadia Code",monospace; }.syntax-layer { z-index:0; pointer-events:none; color:#38333d; background:#fdfcfd; }.editor-stage .editor { z-index:1; resize:none; outline:0; color:transparent; background:transparent; caret-color:#292532; -webkit-text-fill-color:transparent; }.editor-stage .editor::selection { background:rgba(118,82,154,.22); }.editor-stage.plain .syntax-layer { display:none; }.editor-stage.plain .editor { position:absolute; color:#4d4557; background:#fdfcfd; -webkit-text-fill-color:currentColor; }.syn-keyword { color:#8752a2; font-weight:700; }.syn-string { color:#a14f64; }.syn-comment { color:#8a858d; font-style:italic; }.syn-number { color:#986b32; }.syn-decorator { color:#437d78; }.syn-builtin { color:#3d6e9c; }
     .terminal-panel { flex-direction:column; background:var(--terminal); color:#f3e9f8; }.term-head { height:39px; display:flex; align-items:center; gap:8px; padding:0 13px; background:#443b50; color:#ece3f1; font-size:12px; }.dots { display:flex; gap:5px; }.dots i { width:8px; height:8px; background:#ffa2b9; border-radius:50%; }.dots i:nth-child(2) { background:#ffdb93; }.dots i:nth-child(3) { background:#a8e6c0; }.term-status { margin-left:auto; color:#cbb7d9; }.xterm-host { flex:1; min-height:0; padding:7px 10px; }.xterm-host .xterm { height:100%; }
     .xterm-viewport::-webkit-scrollbar { width:9px; height:9px; }
     .xterm-viewport::-webkit-scrollbar-track { background:transparent; }
@@ -28,10 +29,10 @@
 .messages::-webkit-scrollbar-track { background:transparent; }
 .messages::-webkit-scrollbar-thumb { background:#d8c8e0; border-radius:3px; }
 .messages::-webkit-scrollbar-thumb:hover { background:#c0a8d0; }.message { max-width:92%; margin:0 0 9px; padding:9px 10px; border-radius:11px; white-space:pre-wrap; line-height:1.45; font-size:12px; }
-.message .reasoning { margin-bottom:8px; padding:8px 10px; border-radius:8px; background:#f5f0fa; border:1px solid #e0d5eb; font-size:11px; color:var(--muted); font-style:italic; white-space:pre-wrap; cursor:pointer; transition:.25s ease; max-height:300px; overflow:hidden; }
+.message .reasoning { margin-bottom:8px; padding:8px 10px; border-radius:8px; background:#f5f0fa; border:1px solid #e0d5eb; font-size:13px; line-height:1.5; color:var(--muted); font-style:italic; white-space:pre-wrap; overflow:visible; cursor:pointer; }
 .message .reasoning::before { content:'💭 Thinking...'; display:block; font-weight:700; margin-bottom:4px; color:var(--accent); font-style:normal; }
-.message .reasoning.collapsed { max-height:22px; padding:0 10px; margin-bottom:4px; white-space:nowrap; overflow:hidden; background:#f0ebf5; border-color:#e8ddf0; font-size:0; }
-.message .reasoning.collapsed::before { content:'💭 Thinking complete (click to expand)'; font-size:11px; margin-bottom:0; line-height:22px; }
+.message .reasoning.collapsed { height:30px; padding:0 10px; margin-bottom:4px; white-space:nowrap; overflow:hidden; background:#f0ebf5; border-color:#e8ddf0; font-size:0; cursor:pointer; }
+.message .reasoning.collapsed::before { content:'💭 Thinking complete (click to expand)'; font-size:12px; margin-bottom:0; line-height:28px; }
 .message .content { white-space:normal; }.message .content h1,.message .content h2,.message .content h3,.message .content h4 { margin:12px 0 6px; color:var(--ink); }.message .content h1 { font-size:18px; }.message .content h2 { font-size:16px; }.message .content h3 { font-size:14px; }.message .content p { margin:0 0 8px; }.message .content ul,.message .content ol { margin:0 0 8px; padding-left:20px; }.message .content li { margin-bottom:4px; }.message .content code { padding:2px 5px; border-radius:4px; background:#f0ebf5; font-family:ui-monospace,monospace; font-size:11px; }.message .content pre { padding:12px; border-radius:8px; background:#f8f4fb; overflow-x:auto; margin:8px 0; }.message .content pre code { padding:0; background:transparent; }.message .content blockquote { margin:8px 0; padding:8px 12px; border-left:3px solid var(--accent); background:#f8f4fb; }.message .content a { color:var(--accent); }.message .content table { border-collapse:collapse; margin:8px 0; }.message .content th,.message .content td { padding:6px 10px; border:1px solid var(--line); }.message .content th { background:#f0ebf5; }.assistant { background:#f2e8fb; border-bottom-left-radius:3px; }.user { margin-left:auto; background:#ffe4ef; border-bottom-right-radius:3px; }.confirm { width:100%; margin:-3px 0 10px; padding:8px; border-radius:9px; background:var(--peach); font-size:11px; text-align:left; }
     .tool-call { width:100%; margin:-3px 0 10px; padding:10px; border-radius:11px; background:#fff3e0; border:1px solid #ffd09a; font-size:12px; }
     .tool-header { font-weight:700; color:#b45f1a; margin-bottom:6px; }
@@ -44,26 +45,119 @@
     .tool-cancel { background:var(--lilac); }
     .tool-output { margin-top:8px; padding:8px; border-radius:7px; background:#fff8f0; font-family:ui-monospace,monospace; font-size:11px; white-space:pre-wrap; word-break:break-all; max-height:200px; overflow:auto; }.composer { padding:10px; border-top:1px solid #f0ddea; background:#fffafd; }.hint { margin-bottom:6px; color:var(--muted); font-size:10px; }.prompt { width:100%; height:78px; resize:none; border:1px solid #ead8e7; border-radius:10px; padding:9px; background:white; color:var(--ink); outline:0; font-size:12px; transition:all 0.15s; }.prompt:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(162,118,207,0.1); }.compose-row { display:flex; align-items:center; gap:7px; margin-top:7px; }.clear { padding:6px 8px; border-radius:8px; background:var(--lilac); font-size:11px; border:1px solid rgba(162,118,207,0.1); }.ask { margin-left:auto; padding:7px 12px; border-radius:9px; background:var(--accent); color:white; font-size:12px; font-weight:700; border:1px solid var(--accent); }.ask:hover { background:var(--accent-hover); box-shadow:var(--shadow-md); }
     .modal-backdrop { position:fixed; inset:0; z-index:10; display:none; place-items:center; background:#5c476566; backdrop-filter:blur(4px); }.modal-backdrop.open { display:grid; }.modal { width:360px; padding:20px; border-radius:18px; background:#fffafd; box-shadow:0 18px 55px #3f264755; }.modal h2 { margin:0 0 4px; font-size:17px; }.modal p { margin:0 0 15px; color:var(--muted); font-size:12px; }.modal label { display:block; margin:10px 0 5px; font-size:12px; font-weight:700; }.modal input { width:100%; padding:9px; border:1px solid var(--line); border-radius:9px; outline:0; color:var(--ink); transition:all 0.15s; }.modal input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(162,118,207,0.1); }.modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:17px; }.modal-actions button { padding:8px 12px; border-radius:9px; background:var(--lilac); border:1px solid rgba(162,118,207,0.1); }.modal-actions .save-settings { background:var(--accent); color:white; border-color:var(--accent); }.modal-actions .save-settings:hover { background:var(--accent-hover); }.file-menu { position:fixed; z-index:20; display:none; min-width:120px; padding:5px; border:1px solid var(--line); border-radius:9px; background:var(--paper); box-shadow:0 8px 22px #3f264733; }.file-menu.open { display:block; }.file-menu button { display:block; width:100%; padding:7px 9px; border-radius:6px; background:transparent; text-align:left; font-size:12px; }.file-menu button:hover { background:var(--lilac); }.file-menu button.danger { color:#b14c6c; }
+    .mobile-nav { display:none; }
+    /* Precision workbench: dense, neutral structure with semantic color. */
+    :root { --ink:#292532; --muted:#777080; --line:#ddd9e1; --bg:#efedf1; --paper:#fbfafb; --lilac:#eee9f5; --pink:#f8e7ee; --peach:#f8eddf; --blue:#e6eff6; --accent:#76529a; --accent-hover:#644184; --terminal:#24212a; --shadow-sm:none; --shadow-md:none; --shadow-lg:none; }
+    button { border-radius:4px; transition:background-color .12s,border-color .12s,color .12s; }
+    button:hover { filter:none; transform:none; box-shadow:none; }
+    button:focus-visible,input:focus-visible,textarea:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+    .top { height:36px; padding:0 10px; gap:12px; background:#f7f5f8; box-shadow:none; }
+    .brand { display:flex; align-items:center; font-size:14px; letter-spacing:.2px; color:var(--ink); }
+    .brand b { width:19px; height:19px; margin-right:7px; border-radius:4px; background:var(--accent); color:white; font-size:10px; }
+    .work { margin-left:0; padding:0 0 0 12px; border-left:1px solid var(--line); border-radius:0; background:transparent; font-size:12px; }
+    .connection { margin-left:auto; display:flex; align-items:center; gap:6px; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.6px; }
+    .connection::before { content:''; width:6px; height:6px; border-radius:50%; background:#54a276; box-shadow:0 0 0 2px #dcece2; }
+    .shell { height:calc(100vh - 36px); grid-template-columns:var(--left-pane) 5px minmax(380px,1fr) 5px var(--right-pane); }
+    .splitter { background:var(--bg); }.splitter::after { left:2px; width:1px; background:var(--line); }.splitter:hover::after,.splitter.dragging::after { background:var(--accent); }
+    .files { padding:9px 7px; background:#f7f5f8; }
+    .section-title { height:25px; margin:0 3px 5px; color:#514a59; font-size:12px; letter-spacing:1px; }
+    .tools { gap:3px; margin-bottom:7px; padding-bottom:7px; border-bottom:1px solid var(--line); }
+    .tools button,.round { min-height:29px; padding:4px 8px; border:1px solid var(--line); border-radius:4px; background:#fbfafb; color:#5e5766; font-size:12px; }
+    .tools button:nth-child(2),.round.blue { background:#fbfafb; }
+    .tools button:hover,.round:hover { border-color:#bcb3c5; background:var(--lilac); }
+    .tree .item { position:relative; min-height:30px; padding:6px 7px; border-radius:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; word-break:normal; font-size:14px; }
+    .tree .item:hover { border-color:transparent; background:#ece9ef; box-shadow:none; }
+    .tree .folder { color:#4f4658; }
+    .file-path { display:flex; align-items:center; gap:3px; min-height:28px; margin-bottom:5px; padding:3px; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none; }
+    .file-path::-webkit-scrollbar { display:none; }.file-path button { flex:none; padding:3px 5px; border-radius:3px; background:transparent; color:var(--muted); font-size:12px; }.file-path button:hover { background:var(--lilac); color:var(--ink); }.file-path .separator { color:#aaa3ad; font-size:10px; }
+    .tree .item { display:flex; align-items:center; gap:7px; }.tree .item .file-icon { flex:none; width:17px; height:17px; color:#89818f; }.tree .item.folder .file-icon { color:#9a6f38; }.tree .item .file-name { min-width:0; overflow:hidden; text-overflow:ellipsis; }.tree-empty { padding:16px 7px; color:var(--muted); font-size:13px; text-align:center; }
+    .center { padding:0; background:var(--paper); }
+    .tabbar { height:34px; align-items:stretch; gap:0; padding:0; border:0; border-bottom:1px solid var(--line); border-radius:0; background:#e9e6eb; }
+    .tab { position:relative; height:33px; max-width:190px; padding:0 9px; border:0; border-right:1px solid var(--line); border-radius:0; font-size:13px; }
+    .tab:hover { background:#f1eff2; }.tab.active { background:var(--paper); border:0; border-right:1px solid var(--line); color:var(--ink); box-shadow:none; }
+    .tab.active::after { content:''; position:absolute; left:0; right:0; bottom:0; height:2px; background:var(--accent); }
+    .tab .x { margin-left:auto; }.new-tab { margin:4px; width:25px; height:25px; border:1px solid transparent; border-radius:4px; background:transparent; font-size:16px; }.new-tab:hover { border-color:#cbc5ce; background:#f7f5f8; }
+    .area { border:0; border-radius:0; box-shadow:none; }
+    .launcher { gap:9px; }.launcher .spark { display:grid; place-items:center; width:42px; height:42px; border:1px solid var(--line); border-radius:8px; background:#f4f1f5; color:var(--accent); font-size:21px; }.launcher h2 { font-size:18px; }.launcher p { font-size:14px; line-height:1.5; }.launcher button { padding:7px 10px; border:1px solid var(--line); border-radius:4px; background:white; }
+    .editor { padding:12px 14px; background:#fdfcfd; font-size:13px; line-height:1.65; }
+    .editor-bottom { min-height:32px; padding:4px 8px; background:#f5f3f6; }
+    .pill { padding:4px 8px; border:1px solid var(--line); border-radius:4px; background:transparent; font-size:12px; }.pill.primary { background:var(--accent); }.pill.peach { background:var(--peach); }.status { font-size:11px; }
+    .terminal-panel { background:var(--terminal); }.term-head { height:29px; padding:0 9px; background:#302c36; font-size:10px; }.dots i { width:6px; height:6px; }.xterm-host { padding:5px 8px; }
+    .chat-wrap { padding:0; background:#f7f5f8; }
+    .chat { border:0; border-radius:0; background:#f9f8fa; box-shadow:none; }
+    .chat-head { min-height:44px; padding:6px 8px; border-color:var(--line); }.avatar { width:27px; height:27px; border:1px solid #e4d5dc; border-radius:5px; background:var(--pink); }.chat-head strong { font-size:14px; }.chat-head small { font-size:10px; }
+    .settings { width:27px; height:27px; border:1px solid var(--line); border-radius:4px; background:transparent; }.auto-approve { padding:4px 7px; border:1px solid var(--line); border-radius:4px; background:transparent; font-size:9px; }.auto-approve.active { background:#e1f0e6; border-color:#8fb99d; color:#327047; }
+    .context { margin:6px 7px 0; padding:5px; border:1px solid #d4dce3; border-radius:4px; background:#f0f5f8; font-size:9px; }.context-list { gap:2px; }.context-item { padding:3px 5px; border-radius:3px; background:#e4edf3; font-size:10px; }.context-item.disabled { background:#efedf0; }.context-item .toggle { width:20px; height:12px; }.context-item .toggle::after { width:8px; height:8px; }.context-item:not(.disabled) .toggle::after { left:10px; }
+    .messages { padding:8px; max-height:calc(100vh - 260px); }.message { max-width:100%; margin-bottom:5px; padding:7px 8px; border-radius:4px; font-size:13px; line-height:1.5; }.assistant { border-left:2px solid #cab7da; background:#f2eff5; }.user { max-width:92%; border-right:2px solid #dbb9c8; background:#f8edf2; }
+    .message .content pre { padding:9px; border:1px solid #ded9e2; border-radius:3px; background:#ebe8ed; }.message .content code { background:#e9e5ec; }.message .reasoning { border-radius:3px; }
+    .tool-call { padding:8px; border-radius:4px; background:#faf4e9; }.tool-command,.tool-output { border-radius:3px; }
+    .composer { padding:7px; border-color:var(--line); background:#f4f2f5; }.composer > .hint { display:none; }.prompt { height:68px; padding:8px; border-color:#cec8d1; border-radius:4px; background:#fff; font-size:14px; }.prompt:focus { border-color:var(--accent); box-shadow:none; }.compose-row { margin-top:4px; }.ask { padding:6px 11px; border-radius:4px; font-size:12px; }
+    .modal { border:1px solid var(--line); border-radius:7px; background:#faf9fb; box-shadow:0 18px 55px #28212f33; }.modal input,.modal-actions button { border-radius:4px; }
+    .app-dialog { width:min(400px,calc(100vw - 28px)); padding:0; overflow:hidden; }.dialog-head { display:flex; align-items:center; gap:9px; padding:14px 16px 10px; }.dialog-mark { display:grid; place-items:center; width:28px; height:28px; border-radius:5px; background:var(--lilac); color:var(--accent); }.dialog-head h2 { margin:0; font-size:15px; }.dialog-body { padding:0 16px 15px; }.dialog-body p { margin:0 0 11px; color:var(--muted); font-size:12px; line-height:1.5; white-space:pre-wrap; }.dialog-input { width:100%; padding:9px 10px; border:1px solid #c9c2cd; border-radius:4px; background:white; color:var(--ink); font-size:13px; outline:0; }.dialog-actions { display:flex; justify-content:flex-end; gap:6px; padding:9px 12px; border-top:1px solid var(--line); background:#f3f1f4; }.dialog-actions button { min-width:70px; padding:7px 11px; border:1px solid var(--line); background:#fbfafb; font-size:12px; }.dialog-actions .dialog-confirm { border-color:var(--accent); background:var(--accent); color:white; }.dialog-actions .dialog-confirm.danger { border-color:#a3475e; background:#a3475e; }.app-dialog.danger .dialog-mark { background:#f7e5e9; color:#a3475e; }
+    .toast { position:fixed; z-index:30; right:18px; bottom:18px; display:flex; align-items:center; gap:8px; min-width:190px; max-width:min(360px,calc(100vw - 28px)); padding:10px 12px; border:1px solid #aac9b4; border-radius:5px; background:#eff8f2; color:#326947; box-shadow:0 10px 30px #28212f22; font-size:12px; opacity:0; transform:translateY(8px); pointer-events:none; transition:opacity .16s,transform .16s; }.toast.show { opacity:1; transform:none; }.toast.error { border-color:#d4a9b4; background:#faeef1; color:#8e3e53; }
+    @media (max-width: 760px) {
+      body { min-height:100dvh; }
+      button:hover { transform:none; }
+      .top { height:42px; padding:0 10px; gap:9px; }
+      .work { max-width:48vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .connection { display:none; }.shell { height:calc(100dvh - 42px - 52px - env(safe-area-inset-bottom)); display:block; position:relative; }
+      .shell > .files,.shell > .center,.shell > .chat-wrap { display:none; position:absolute; inset:0; width:100%; height:100%; }
+      .shell[data-mobile-view="files"] > .files { display:block; }
+      .shell[data-mobile-view="workspace"] > .center { display:flex; }
+      .shell[data-mobile-view="assistant"] > .chat-wrap { display:block; }
+      .splitter { display:none; }
+      .files { padding:9px 8px 20px; border-right:0; }
+      .tools button,.round { min-height:40px; padding:8px 12px; }
+      .tree .item { min-height:42px; padding:10px 8px; }
+      .center { padding:6px; }
+      .tabbar { height:44px; padding-inline:4px; }
+      .tab { height:37px; max-width:72vw; }
+      .new-tab { width:38px; height:34px; flex:none; }
+      .area { border-radius:0 0 11px 11px; }
+      .editor-stage .editor,.syntax-layer { padding:13px; font-size:13px; }
+      .editor-bottom { overflow-x:auto; }
+      .pill { min-height:36px; white-space:nowrap; }
+      .chat-wrap { padding:6px; border-left:0; }
+      .chat { border-radius:12px; }
+      .chat-head { padding:9px; gap:6px; }
+      .chat-head > div:nth-child(2) { min-width:0; }
+      .auto-approve { padding:7px; }
+      .settings { flex:none; width:36px; height:36px; }
+      .context { margin:6px 8px 0; }
+      .messages { padding:9px; max-height:none; }
+      .message { max-width:96%; font-size:13px; }
+      .composer { padding:8px 8px calc(8px + env(safe-area-inset-bottom)); }
+      .prompt { height:64px; font-size:16px; }
+      .ask { min-height:38px; min-width:76px; }
+      .modal-backdrop { padding:16px; }
+      .modal { width:100%; max-width:360px; max-height:calc(100dvh - 32px); overflow:auto; padding:18px; }
+      .mobile-nav { position:fixed; z-index:9; left:0; right:0; bottom:0; height:calc(52px + env(safe-area-inset-bottom)); padding:3px 5px env(safe-area-inset-bottom); display:grid; grid-template-columns:repeat(3,1fr); gap:2px; border-top:1px solid var(--line); background:rgba(247,245,248,.97); backdrop-filter:blur(14px); }
+      .mobile-nav button { min-width:0; border-radius:11px; background:transparent; color:var(--muted); font-size:11px; font-weight:750; }
+      .mobile-nav button span { display:block; margin-bottom:2px; font-size:18px; line-height:18px; }
+      .mobile-nav button.active { background:var(--lilac); color:var(--accent-hover); box-shadow:inset 0 0 0 1px rgba(162,118,207,.12); }
+    }
   </style>
 </head>
 <body>
-  <header class="top"><div class="brand"><b>✦</b>PipkinPad</div><div class="work">⌂ Workspace</div></header>
+  <header class="top"><div class="brand"><b>✦</b>PipkinPad</div><div class="work">⌂ Workspace</div><div class="connection">Local session</div></header>
   <div class="shell">
-    <aside class="files"><div class="section-title">File Browser <button class="round blue" id="refresh">↻</button></div><div class="tools"><button id="newfile">＋ File</button><button id="newdir">＋ Folder</button><button id="upload-trigger">⇧</button><input class="upload" id="upload" type="file"></div><div class="tree" id="files"></div></aside><div class="splitter" id="left-splitter" title="Drag to resize"></div>
+    <aside class="files"><div class="section-title">File Browser <button class="round blue" id="refresh">↻</button></div><div class="tools"><button id="newfile">＋ File</button><button id="newdir">＋ Folder</button><button id="upload-trigger">⇧</button><input class="upload" id="upload" type="file"></div><nav class="file-path" id="file-path" aria-label="Current folder"></nav><div class="tree" id="files"></div></aside><div class="splitter" id="left-splitter" title="Drag to resize"></div>
     <main class="center"><div class="tabbar" id="tabbar"><button class="new-tab" id="new-terminal" title="New Terminal">＋</button></div><section class="area" id="area"><div class="launcher" id="launcher"><div class="spark">✦</div><h2>Welcome to PipkinPad</h2><p>Open files from the left, or click <b>＋</b> above to create a Terminal. They all work as independent tabs here.</p><button id="launch-terminal">＋ New Terminal</button></div></section></main>
     <div class="splitter" id="right-splitter" title="Drag to resize"></div><aside class="chat-wrap"><section class="chat"><div class="chat-head"><div class="avatar">🐰</div><div><strong>Assistant</strong><small>Commands require your confirmation</small></div><button class="auto-approve" id="autoApprove" title="Auto-approve all commands until page is closed">⚡ Auto</button><button class="settings" id="settingsPanel">⚙</button></div><div class="context" id="attachments"><div class="context-empty">🫧 No context attached</div></div><div class="messages" id="messages"></div><div class="composer"><div class="hint">Tabs with enabled context will be automatically attached to AI</div><textarea class="prompt" id="prompt"></textarea><div class="compose-row"><span class="hint">Enter</span><button class="ask" id="ask">Send ✦</button></div></div></section></aside>
   </div>
-  <div class="modal-backdrop" id="settingsModal"><form class="modal" id="settingsForm"><h2>Assistant Settings</h2><p>Use any OpenAI-compatible service.</p><label for="base-url">API Base URL</label><input id="base-url" required placeholder="https://api.openai.com/v1"><label for="model-name">Model Name</label><input id="model-name" required placeholder="e.g. gpt-4.1-mini"><label for="api-key">API Key</label><input id="api-key" type="password" placeholder="Leave empty to keep saved key"><div class="modal-actions"><button type="button" id="cancelSettings">Cancel</button><button class="save-settings" type="submit">Save Settings</button></div></form></div><div class="file-menu" id="file-menu"></div>
+  <nav class="mobile-nav" aria-label="Mobile workspace navigation"><button data-view="files"><span>☰</span>Files</button><button class="active" data-view="workspace"><span>⌨</span>Workspace</button><button data-view="assistant"><span>✦</span>Assistant</button></nav>
+  <div class="modal-backdrop" id="settingsModal"><form class="modal" id="settingsForm"><h2>Assistant Settings</h2><p>Use any OpenAI-compatible service.</p><label for="base-url">API Base URL</label><input id="base-url" required placeholder="https://api.openai.com/v1"><label for="model-name">Model Name</label><input id="model-name" required placeholder="e.g. gpt-4.1-mini"><label for="api-key">API Key</label><input id="api-key" type="password" placeholder="Leave empty to keep saved key"><div class="modal-actions"><button type="button" id="cancelSettings">Cancel</button><button class="save-settings" type="submit">Save Settings</button></div></form></div><div class="modal-backdrop" id="appDialog"><form class="modal app-dialog" id="appDialogForm"><div class="dialog-head"><div class="dialog-mark">✦</div><h2 id="dialogTitle"></h2></div><div class="dialog-body"><p id="dialogMessage"></p><input class="dialog-input" id="dialogInput" autocomplete="off"></div><div class="dialog-actions"><button type="button" id="dialogCancel">Cancel</button><button class="dialog-confirm" id="dialogConfirm" type="submit">Confirm</button></div></form></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="file-menu" id="file-menu"></div>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js"></script>    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>  <script>
     const $ = (id) => document.getElementById(id);
-    let token = '', tabs = [], active = null, history = [], toolRound = null, saveTimer = null, stateDirty = false, stateSaving = false, autoApprove = false;
+    let token = '', tabs = [], active = null, history = [], toolRound = null, saveTimer = null, stateDirty = false, stateSaving = false, autoApprove = false, currentDirectory = '';
     const contextEnabled = new Set();
     const expanded = new Set(['']);
     const uid = () => Math.random().toString(36).slice(2, 10);
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]);
     function stateSnapshot() { return {
       tabs: tabs.map((tab) => ({ id: tab.id, kind: tab.kind, name: tab.name, path: tab.path, content: tab.kind === 'file' ? tab.content : undefined, dirty: !!tab.dirty, output: tab.kind === 'terminal' ? (tab.output || '').slice(-10000) : undefined, context: contextEnabled.has(tab.id) })),
-      active, expanded: [...expanded], left: getComputedStyle(document.documentElement).getPropertyValue('--left-pane').trim(), right: getComputedStyle(document.documentElement).getPropertyValue('--right-pane').trim()
+      active, expanded: [...expanded], directory: currentDirectory, left: getComputedStyle(document.documentElement).getPropertyValue('--left-pane').trim(), right: getComputedStyle(document.documentElement).getPropertyValue('--right-pane').trim()
     }; }
     function saveState() {
       if (!token) return;
@@ -88,6 +182,33 @@
       return response.json();
     }
     function current() { return tabs.find((tab) => tab.id === active); }
+    let dialogResolve = null;
+    function closeDialog(value) { if (!dialogResolve) return; $('appDialog').classList.remove('open'); const resolve = dialogResolve; dialogResolve = null; resolve(value); }
+    function showDialog({ title, message = '', value, confirmLabel = 'Confirm', danger = false, cancel = true }) {
+      if (dialogResolve) closeDialog(null);
+      $('dialogTitle').textContent = title; $('dialogMessage').textContent = message; $('dialogMessage').style.display = message ? 'block' : 'none';
+      const hasInput = value !== undefined; $('dialogInput').style.display = hasInput ? 'block' : 'none'; $('dialogInput').value = hasInput ? value : '';
+      $('dialogCancel').style.display = cancel ? 'block' : 'none'; $('dialogConfirm').textContent = confirmLabel; $('dialogConfirm').classList.toggle('danger', danger); $('appDialogForm').classList.toggle('danger', danger); $('appDialog').classList.add('open');
+      requestAnimationFrame(() => (hasInput ? $('dialogInput') : $('dialogConfirm')).focus());
+      return new Promise((resolve) => { dialogResolve = resolve; });
+    }
+    const appPrompt = (title, value = '', message = '') => showDialog({ title, message, value, confirmLabel: 'Continue' });
+    const appConfirm = (title, message, confirmLabel = 'Confirm', danger = false) => showDialog({ title, message, confirmLabel, danger });
+    const appAlert = (title, message = '') => showDialog({ title, message, confirmLabel: 'OK', cancel: false });
+    let toastTimer = null;
+    function showToast(text, error = false) { clearTimeout(toastTimer); $('toast').textContent = `${error ? '!' : '✓'}  ${text}`; $('toast').classList.toggle('error', error); $('toast').classList.add('show'); toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2200); }
+    const pythonKeywords = new Set('False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield match case'.split(' '));
+    const pythonBuiltins = new Set('abs all any bool bytes callable chr dict dir enumerate filter float format frozenset getattr hasattr hash help hex id input int isinstance issubclass iter len list map max memoryview min next object oct open ord pow print property range repr reversed round set setattr slice sorted str sum super tuple type vars zip __import__'.split(' '));
+    function highlightPython(source) {
+      const pattern = /("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|#[^\n]*|@[A-Za-z_]\w*|\b(?:\d+(?:\.\d+)?|[A-Za-z_]\w*)\b)/g;
+      let html = '', last = 0;
+      for (const match of source.matchAll(pattern)) {
+        html += escapeHtml(source.slice(last, match.index)); const token = match[0]; let kind = '';
+        if (token.startsWith('#')) kind = 'comment'; else if (token.startsWith('@')) kind = 'decorator'; else if (/^["']/.test(token)) kind = 'string'; else if (/^\d/.test(token)) kind = 'number'; else if (pythonKeywords.has(token)) kind = 'keyword'; else if (pythonBuiltins.has(token)) kind = 'builtin';
+        html += kind ? `<span class="syn-${kind}">${escapeHtml(token)}</span>` : escapeHtml(token); last = match.index + token.length;
+      }
+      return html + escapeHtml(source.slice(last)) + (source.endsWith('\n') ? ' ' : '');
+    }
     function renderAttachments() {
       const container = $('attachments');
       if (tabs.length === 0) {
@@ -115,17 +236,23 @@
       for (const tab of tabs) {
         const button = document.createElement('button');
         button.className = `tab ${tab.id === active ? 'active' : ''}`;
-        button.innerHTML = `${tab.kind === 'terminal' ? '▣' : '⌁'} <span>${tab.name}</span><span class="x">×</span>`;
-        button.onclick = (event) => event.target.classList.contains('x') ? closeTab(tab.id) : activate(tab.id);
+        button.innerHTML = `${tab.kind === 'terminal' ? '▣ ' : ''}<span>${tab.name}</span><span class="x">×</span>`;
+        button.onclick = (event) => event.target.classList.contains('x') ? void closeTab(tab.id) : activate(tab.id);
         bar.insertBefore(button, $('new-terminal'));
       }
     }
     function buildFilePanel(tab) {
       const panel = document.createElement('section'); panel.className = 'panel file-panel';
-      panel.innerHTML = '<textarea class="editor" spellcheck="false"></textarea><div class="editor-bottom"><button class="pill primary">Save</button><button class="pill">✦ Attach to AI</button><button class="pill peach">Download</button><button class="pill">Move/Rename</button><button class="pill peach">Delete</button><span class="status">Opened</span></div>';
-      const editor = panel.querySelector('.editor'); const buttons = panel.querySelectorAll('button'); const status = panel.querySelector('.status'); editor.value = tab.content;
-      editor.oninput = () => { tab.content = editor.value; tab.dirty = true; status.textContent = 'Unsaved changes'; scheduleStateSave(); };
-      buttons[0].onclick = async () => { await api(`/api/files/content?path=${encodeURIComponent(tab.path)}&content=${encodeURIComponent(tab.content)}`, { method: 'PUT' }); tab.dirty = false; status.textContent = 'Saved'; saveState(); };
+      const isPython = tab.path.toLowerCase().endsWith('.py');
+      panel.innerHTML = `<div class="editor-stage ${isPython ? '' : 'plain'}"><pre class="syntax-layer" aria-hidden="true"></pre><textarea class="editor" spellcheck="false" aria-label="File editor"></textarea></div><div class="editor-bottom"><button class="pill primary">Save</button><button class="pill">✦ Attach to AI</button><button class="pill peach">Download</button><button class="pill">Move/Rename</button><button class="pill peach">Delete</button><span class="status">Opened</span></div>`;
+      const editor = panel.querySelector('.editor'), syntax = panel.querySelector('.syntax-layer'); const buttons = panel.querySelectorAll('button'); const status = panel.querySelector('.status'); editor.value = tab.content;
+      const renderHighlight = () => { if (isPython) syntax.innerHTML = highlightPython(editor.value); };
+      const syncScroll = () => { syntax.scrollTop = editor.scrollTop; syntax.scrollLeft = editor.scrollLeft; };
+      renderHighlight(); editor.onscroll = syncScroll;
+      editor.oninput = () => { tab.content = editor.value; tab.dirty = true; status.textContent = 'Unsaved changes'; renderHighlight(); syncScroll(); scheduleStateSave(); };
+      const saveFile = async () => { const button = buttons[0]; button.disabled = true; button.textContent = 'Saving…'; status.textContent = 'Saving…'; try { await api(`/api/files/content?path=${encodeURIComponent(tab.path)}&content=${encodeURIComponent(tab.content)}`, { method: 'PUT' }); tab.dirty = false; status.textContent = 'Saved just now'; button.textContent = 'Saved ✓'; showToast(`${tab.name} saved`); saveState(); setTimeout(() => { button.textContent = 'Save'; button.disabled = false; }, 1100); } catch (error) { status.textContent = 'Save failed'; button.textContent = 'Save'; button.disabled = false; showToast(`Save failed: ${error.message}`, true); } };
+      editor.onkeydown = (event) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); void saveFile(); } };
+      buttons[0].onclick = saveFile;
       buttons[1].onclick = () => { contextEnabled.has(tab.id) ? contextEnabled.delete(tab.id) : contextEnabled.add(tab.id); renderAttachments(); saveState(); };
       buttons[2].onclick = () => downloadFile(tab); buttons[3].onclick = () => moveFile(tab); buttons[4].onclick = () => deleteFile(tab);
       return panel;
@@ -157,38 +284,46 @@
       if (tab?.term) setTimeout(() => { tab.fit.fit(); tab.term.focus(); }, 0);
     }
     function activate(id) { active = id; renderTabs(); renderArea(); renderAttachments(); saveState(); }
-    function closeTab(id, skipConfirm = false) {
-      const tab = tabs.find((item) => item.id === id); if (!skipConfirm && tab?.dirty && !confirm('This file has unsaved changes. Close anyway?')) return;
+    async function closeTab(id, skipConfirm = false) {
+      const tab = tabs.find((item) => item.id === id); if (!skipConfirm && tab?.dirty && !await appConfirm('Unsaved changes', `Close ${tab.name} without saving?`, 'Close anyway', true)) return;
       tab?.ws?.close(); tab?.resizeObserver?.disconnect(); tab?.term?.dispose(); tab?.panel?.remove(); contextEnabled.delete(id);
       tabs = tabs.filter((item) => item.id !== id);
       if (active === id) active = tabs.at(-1)?.id || null; renderTabs(); renderArea(); renderAttachments(); saveState();
     }
     function newTerminal() { const count = tabs.filter((tab) => tab.kind === 'terminal').length + 1; const tab = { id: `term_${uid()}`, kind: 'terminal', name: `Terminal ${count}`, output: '' }; tabs.push(tab); activate(tab.id); }
+    const fileIcon = (directory) => directory
+      ? '<svg class="file-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h6l2 2h9v10h-17z" fill="currentColor" opacity=".16"/><path d="M3.5 6.5h6l2 2h9v10h-17z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>'
+      : '<svg class="file-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h8l4 4v13H6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M14 3.5v4h4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+    const inCurrentDirectory = (name) => currentDirectory ? `${currentDirectory}/${name}` : name;
+    function renderFilePath() {
+      const parts = currentDirectory ? currentDirectory.split('/') : [];
+      let html = '<button data-path="" title="Workspace root">⌂</button>';
+      parts.forEach((part, index) => { const path = parts.slice(0, index + 1).join('/'); html += `<span class="separator">/</span><button data-path="${escapeHtml(path)}">${escapeHtml(part)}</button>`; });
+      $('file-path').innerHTML = html;
+      $('file-path').querySelectorAll('button').forEach((button) => button.onclick = () => { currentDirectory = button.dataset.path; saveState(); tree(); });
+      $('file-path').scrollLeft = $('file-path').scrollWidth;
+    }
     async function tree() {
       let html = '';
-      async function visit(path, depth) {
-        const items = await api(`/api/files?path=${encodeURIComponent(path)}`);
-        for (const item of items) {
-          const open = expanded.has(item.path), indent = 7 + depth * 15;
-          html += `<div class="item ${item.directory ? 'folder' : ''}" style="padding-left:${indent}px" data-path="${item.path}" data-dir="${item.directory}">${item.directory ? (open ? '▾' : '▸') : '⌁'} ${item.name}</div>`;
-          if (item.directory && open) await visit(item.path, depth + 1);
-        }
-      }
-      try { await visit('', 0); } catch (error) { html = `<div class="item">Unable to read files: ${error.message}</div>`; }
-      $('files').innerHTML = html || '<div class="item">This workspace is empty</div>';
+      renderFilePath();
+      try {
+        const items = await api(`/api/files?path=${encodeURIComponent(currentDirectory)}`);
+        html = items.map((item) => `<div class="item ${item.directory ? 'folder' : ''}" data-path="${escapeHtml(item.path)}" data-dir="${item.directory}">${fileIcon(item.directory)}<span class="file-name">${escapeHtml(item.name)}</span></div>`).join('');
+      } catch (error) { html = `<div class="tree-empty">Unable to read files: ${error.message}</div>`; }
+      $('files').innerHTML = html || '<div class="tree-empty">This folder is empty</div>';
       $('files').querySelectorAll('[data-path]').forEach((element) => {
         element.onclick = async () => {
           const path = element.dataset.path;
-          if (element.dataset.dir === 'true') { expanded.has(path) ? expanded.delete(path) : expanded.add(path); saveState(); await tree(); return; }
+          if (element.dataset.dir === 'true') { currentDirectory = path; saveState(); await tree(); return; }
           const old = tabs.find((tab) => tab.kind === 'file' && tab.path === path); if (old) { activate(old.id); return; }
-          try { const data = await api(`/api/files/content?path=${encodeURIComponent(path)}`); const tab = { id: `file_${uid()}`, kind: 'file', name: path.split('/').pop(), path, content: data.content, dirty: false }; tabs.push(tab); activate(tab.id); } catch (error) { alert(`Unable to open file: ${error.message}`); }
+          try { const data = await api(`/api/files/content?path=${encodeURIComponent(path)}`); const tab = { id: `file_${uid()}`, kind: 'file', name: path.split('/').pop(), path, content: data.content, dirty: false }; tabs.push(tab); activate(tab.id); } catch (error) { await appAlert('Unable to open file', error.message); }
         };
         element.oncontextmenu = (event) => { event.preventDefault(); event.stopPropagation(); showFileMenu(event, element.dataset.path, element.dataset.dir === 'true'); };
       });
     }
-    async function downloadFile(tab) { const response = await fetch(`/api/files/download?path=${encodeURIComponent(tab.path)}`, { headers: { 'X-Session-Token': token } }); if (!response.ok) return alert(await response.text()); const link = document.createElement('a'); link.href = URL.createObjectURL(await response.blob()); link.download = tab.name; link.click(); URL.revokeObjectURL(link.href); }
-    async function moveFile(tab) { const target = prompt('Target relative path', tab.path); if (target && target !== tab.path) { await renamePath(tab.path, target); } }
-    async function deleteFile(tab) { if (confirm(`Delete ${tab.path}?`)) { await deletePath(tab.path); } }
+    async function downloadFile(tab) { const response = await fetch(`/api/files/download?path=${encodeURIComponent(tab.path)}`, { headers: { 'X-Session-Token': token } }); if (!response.ok) return appAlert('Download failed', await response.text()); const link = document.createElement('a'); link.href = URL.createObjectURL(await response.blob()); link.download = tab.name; link.click(); URL.revokeObjectURL(link.href); }
+    async function moveFile(tab) { const target = await appPrompt('Move or rename', tab.path, 'Enter the new workspace-relative path.'); if (target && target !== tab.path) { await renamePath(tab.path, target); } }
+    async function deleteFile(tab) { if (await appConfirm('Delete file', `Permanently delete ${tab.path}?`, 'Delete', true)) { await deletePath(tab.path); } }
     async function renamePath(path, target) {
       await api('/api/files/move', { method: 'POST', body: JSON.stringify({ source: path, destination: target }) });
       for (const tab of tabs.filter((item) => item.kind === 'file' && item.path === path)) { tab.path = target; tab.name = target.split('/').pop(); }
@@ -201,17 +336,17 @@
     }
     function showTreeMenu(event) {
       const menu = $('file-menu'); menu.innerHTML = '';
-      const add = (label, action) => { const button = document.createElement('button'); button.textContent = label; button.onclick = async () => { menu.classList.remove('open'); try { await action(); } catch (error) { alert(`Operation failed: ${error.message}`); } }; menu.append(button); };
-      add('New File', async () => { const path = prompt('Relative path for new file'); if (path) { await api(`/api/files/content?path=${encodeURIComponent(path)}&content=`, { method: 'PUT' }); tree(); } });
-      add('New Folder', async () => { const path = prompt('Relative path for new folder'); if (path) { await api(`/api/files/directory?path=${encodeURIComponent(path)}`, { method: 'POST' }); tree(); } });
+      const add = (label, action) => { const button = document.createElement('button'); button.textContent = label; button.onclick = async () => { menu.classList.remove('open'); try { await action(); } catch (error) { await appAlert('Operation failed', error.message); } }; menu.append(button); };
+      add('New File', async () => { const name = await appPrompt('Create file', '', `Location: ${currentDirectory || 'Workspace root'}`); if (name) { const path = inCurrentDirectory(name); await api(`/api/files/content?path=${encodeURIComponent(path)}&content=`, { method: 'PUT' }); tree(); } });
+      add('New Folder', async () => { const name = await appPrompt('Create folder', '', `Location: ${currentDirectory || 'Workspace root'}`); if (name) { const path = inCurrentDirectory(name); await api(`/api/files/directory?path=${encodeURIComponent(path)}`, { method: 'POST' }); tree(); } });
       menu.style.left = `${Math.min(event.clientX, window.innerWidth - 140)}px`; menu.style.top = `${Math.min(event.clientY, window.innerHeight - 120)}px`; menu.classList.add('open');
     }
     function showFileMenu(event, path, isDirectory) {
       const menu = $('file-menu'); menu.innerHTML = '';
-      const add = (label, action, danger = false) => { const button = document.createElement('button'); button.textContent = label; if (danger) button.className = 'danger'; button.onclick = async () => { menu.classList.remove('open'); try { await action(); } catch (error) { alert(`Operation failed: ${error.message}`); } }; menu.append(button); };
-      add('Rename', async () => { const parts = path.split('/'); const name = prompt('New name', parts.at(-1)); if (!name || name === parts.at(-1)) return; parts[parts.length - 1] = name; await renamePath(path, parts.join('/')); });
+      const add = (label, action, danger = false) => { const button = document.createElement('button'); button.textContent = label; if (danger) button.className = 'danger'; button.onclick = async () => { menu.classList.remove('open'); try { await action(); } catch (error) { await appAlert('Operation failed', error.message); } }; menu.append(button); };
+      add('Rename', async () => { const parts = path.split('/'); const name = await appPrompt('Rename item', parts.at(-1), `Current path: ${path}`); if (!name || name === parts.at(-1)) return; parts[parts.length - 1] = name; await renamePath(path, parts.join('/')); });
       if (!isDirectory) add('Download', async () => downloadFile({ path, name: path.split('/').pop() }));
-      add('Delete', async () => { if (confirm(`Delete ${path}?`)) await deletePath(path); }, true);
+      add('Delete', async () => { if (await appConfirm('Delete item', `Permanently delete ${path}?`, 'Delete', true)) await deletePath(path); }, true);
       menu.style.left = `${Math.min(event.clientX, window.innerWidth - 140)}px`; menu.style.top = `${Math.min(event.clientY, window.innerHeight - 120)}px`; menu.classList.add('open');
     }
     function message(role, text) { const element = document.createElement('div'); element.className = `message ${role}`; element.textContent = text; $('messages').append(element); $('messages').scrollTop = $('messages').scrollHeight; }
@@ -352,7 +487,7 @@
     async function restoreState() {
       let state = null; try { state = (await api('/api/ui-state')).state; } catch (_) { /* Start empty if the server state is unavailable. */ }
       if (!state) return;
-      applyPaneWidths(state); expanded.clear(); (state.expanded || ['']).forEach((path) => expanded.add(path));
+      applyPaneWidths(state); expanded.clear(); (state.expanded || ['']).forEach((path) => expanded.add(path)); currentDirectory = state.directory || '';
       for (const saved of state.tabs || []) {
         if (saved.kind === 'terminal') tabs.push({ id: saved.id, kind: 'terminal', name: saved.name, output: saved.output || '' });
         if (saved.kind === 'file' && saved.path) {
@@ -372,15 +507,25 @@
       document.querySelector('.files').oncontextmenu = (event) => { event.preventDefault(); showTreeMenu(event); };
       await restoreState(); await tree();
     }
+    function setMobileView(view) {
+      document.querySelector('.shell').dataset.mobileView = view;
+      document.querySelectorAll('.mobile-nav button').forEach((button) => button.classList.toggle('active', button.dataset.view === view));
+      if (view === 'workspace') requestAnimationFrame(() => tabs.filter((tab) => tab.kind === 'terminal').forEach((tab) => tab.fit?.fit()));
+    }
+    document.querySelectorAll('.mobile-nav button').forEach((button) => button.onclick = () => setMobileView(button.dataset.view));
+    setMobileView('workspace');
     $('new-terminal').onclick = newTerminal; $('launch-terminal').onclick = newTerminal; $('refresh').onclick = tree;
-    $('newfile').onclick = async () => { const path = prompt('Relative path for new file'); if (path) { await api(`/api/files/content?path=${encodeURIComponent(path)}&content=`, { method: 'PUT' }); tree(); } };
-    $('newdir').onclick = async () => { const path = prompt('Relative path for new folder'); if (path) { await api(`/api/files/directory?path=${encodeURIComponent(path)}`, { method: 'POST' }); tree(); } };
-    $('upload-trigger').onclick = () => $('upload').click(); $('upload').onchange = async (event) => { const file = event.target.files[0]; if (!file) return; const form = new FormData(); form.append('upload', file); const response = await fetch('/api/files/upload', { method: 'POST', headers: { 'X-Session-Token': token }, body: form }); if (!response.ok) alert(await response.text()); tree(); };
+    $('newfile').onclick = async () => { const name = await appPrompt('Create file', '', `Location: ${currentDirectory || 'Workspace root'}`); if (name) { const path = inCurrentDirectory(name); await api(`/api/files/content?path=${encodeURIComponent(path)}&content=`, { method: 'PUT' }); tree(); } };
+    $('newdir').onclick = async () => { const name = await appPrompt('Create folder', '', `Location: ${currentDirectory || 'Workspace root'}`); if (name) { const path = inCurrentDirectory(name); await api(`/api/files/directory?path=${encodeURIComponent(path)}`, { method: 'POST' }); tree(); } };
+    $('upload-trigger').onclick = () => $('upload').click(); $('upload').onchange = async (event) => { const file = event.target.files[0]; if (!file) return; const form = new FormData(); form.append('path', currentDirectory); form.append('upload', file); const response = await fetch('/api/files/upload', { method: 'POST', headers: { 'X-Session-Token': token }, body: form }); if (!response.ok) await appAlert('Upload failed', await response.text()); event.target.value = ''; tree(); };
     document.addEventListener('click', () => $('file-menu').classList.remove('open')); $('ask').onclick = ask; $('prompt').onkeydown = (event) => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); ask(); } };
     $('settingsPanel').onclick = async () => { const settings = await api('/api/settings'); $('base-url').value = settings.base_url; $('model-name').value = settings.model; $('api-key').value = ''; $('settingsModal').classList.add('open'); };
     $('autoApprove').onclick = () => { autoApprove = !autoApprove; $('autoApprove').classList.toggle('active', autoApprove); };
+    $('appDialogForm').onsubmit = (event) => { event.preventDefault(); closeDialog($('dialogInput').style.display !== 'none' ? $('dialogInput').value.trim() : true); };
+    $('dialogCancel').onclick = () => closeDialog(null); $('appDialog').onclick = (event) => { if (event.target === $('appDialog')) closeDialog(null); };
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && $('appDialog').classList.contains('open')) { event.preventDefault(); closeDialog(null); } });
     $('cancelSettings').onclick = () => $('settingsModal').classList.remove('open'); $('settingsModal').onclick = (event) => { if (event.target === $('settingsModal')) $('settingsModal').classList.remove('open'); };
-    $('settingsForm').onsubmit = async (event) => { event.preventDefault(); await api('/api/settings', { method: 'PUT', body: JSON.stringify({ base_url: $('base-url').value.trim(), model: $('model-name').value.trim(), api_key: $('api-key').value }) }); $('api-key').value = ''; $('settingsModal').classList.remove('open'); alert('Model settings saved'); };
+    $('settingsForm').onsubmit = async (event) => { event.preventDefault(); await api('/api/settings', { method: 'PUT', body: JSON.stringify({ base_url: $('base-url').value.trim(), model: $('model-name').value.trim(), api_key: $('api-key').value }) }); $('api-key').value = ''; $('settingsModal').classList.remove('open'); await appAlert('Settings saved', 'Model settings were updated successfully.'); };
     start().catch((error) => { $('files').textContent = `Startup failed: ${error.message}`; });
   </script>
 </body>
