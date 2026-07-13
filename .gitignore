@@ -9,3 +9,4 @@ dist/
 .pipkinpad-audit.jsonl
 .pipkinpad-ui-state.json
 .ai-workbench-audit.jsonl
+tests
