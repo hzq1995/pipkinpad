@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import base64
 import json
+import os
+import stat
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -29,16 +30,49 @@ class AISettings:
                 "api_key_configured": bool(self.api_key)}
 
 
+def _keyring_available() -> bool:
+    """Check if a functional keyring backend is available."""
+    try:
+        keyring.get_keyring()
+        return True
+    except Exception:
+        return False
+
+
 class SettingsStore:
     def __init__(self, path: Path | None = None):
         self.path = path or Path.home() / ".config" / "pipkinpad" / "settings.json"
+        self._key_path = self.path.parent / ".encryption-key"
+        self._use_keyring = _keyring_available()
+
+    def _get_key(self) -> str:
+        """Get encryption key from keyring or fallback to local file."""
+        if self._use_keyring:
+            try:
+                key = keyring.get_password(SERVICE_NAME, KEY_NAME)
+                if not key:
+                    key = Fernet.generate_key().decode("ascii")
+                    keyring.set_password(SERVICE_NAME, KEY_NAME, key)
+                return key
+            except Exception:
+                # Fallback to file-based key if keyring fails
+                self._use_keyring = False
+
+        # File-based fallback (for headless Linux servers without keyring)
+        if self._key_path.exists():
+            return self._key_path.read_text(encoding="utf-8").strip()
+        key = Fernet.generate_key().decode("ascii")
+        self._key_path.parent.mkdir(parents=True, exist_ok=True)
+        self._key_path.write_text(key, encoding="utf-8")
+        # Restrict permissions to owner only (Unix)
+        try:
+            os.chmod(self._key_path, stat.S_IRUSR | stat.S_IWUSR)
+        except OSError:
+            pass
+        return key
 
     def _fernet(self) -> Fernet:
-        key = keyring.get_password(SERVICE_NAME, KEY_NAME)
-        if not key:
-            key = Fernet.generate_key().decode("ascii")
-            keyring.set_password(SERVICE_NAME, KEY_NAME, key)
-        return Fernet(key.encode("ascii"))
+        return Fernet(self._get_key().encode("ascii"))
 
     def load(self) -> AISettings:
         if not self.path.exists():
@@ -54,7 +88,10 @@ class SettingsStore:
 
     def clear(self) -> None:
         self.path.unlink(missing_ok=True)
-        try:
-            keyring.delete_password(SERVICE_NAME, KEY_NAME)
-        except keyring.errors.PasswordDeleteError:
-            pass
+        if self._use_keyring:
+            try:
+                keyring.delete_password(SERVICE_NAME, KEY_NAME)
+            except keyring.errors.PasswordDeleteError:
+                pass
+        else:
+            self._key_path.unlink(missing_ok=True)
