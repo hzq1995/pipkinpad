@@ -26,6 +26,17 @@ def test_file_crud_and_hidden_filter(tmp_path: Path):
     assert not (tmp_path / "moved.txt").exists()
 
 
+def test_file_tree_ignores_symlink_outside_workspace(tmp_path: Path):
+    outside = tmp_path.parent / "outside"
+    outside.mkdir(exist_ok=True)
+    try:
+        (tmp_path / "outside-link").symlink_to(outside, target_is_directory=True)
+    except OSError as error:
+        pytest.skip(f"Creating symbolic links is unavailable: {error}")
+
+    assert FileService(Workspace(tmp_path)).list_tree() == []
+
+
 def test_command_blocks_are_extracted():
     # Parsing is deliberately transparent: model suggestions remain text until the user confirms.
     from ai_workbench.ai import COMMAND_BLOCK

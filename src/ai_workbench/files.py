@@ -5,7 +5,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from .security import Workspace
+from .security import Workspace, WorkspaceSecurityError
 
 
 class FileService:
@@ -20,7 +20,13 @@ class FileService:
         for item in sorted(directory.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower())):
             if self.workspace.is_hidden(item):
                 continue
-            result.append({"path": self.workspace.relative(item), "name": item.name, "directory": item.is_dir()})
+            try:
+                item_path = self.workspace.relative(item)
+            except WorkspaceSecurityError:
+                # A symlink may appear inside the workspace while resolving outside
+                # it. It is intentionally neither exposed nor followed.
+                continue
+            result.append({"path": item_path, "name": item.name, "directory": item.is_dir()})
         return result
 
     def read_text(self, relative: str) -> str:

@@ -74,10 +74,10 @@
     .tree .item { display:flex; align-items:center; gap:7px; }.tree .item .file-icon { flex:none; width:17px; height:17px; color:#89818f; }.tree .item.folder .file-icon { color:#9a6f38; }.tree .item .file-name { min-width:0; overflow:hidden; text-overflow:ellipsis; }.tree-empty { padding:16px 7px; color:var(--muted); font-size:13px; text-align:center; }
     .center { padding:0; background:var(--paper); }
     .tabbar { height:34px; align-items:stretch; gap:0; padding:0; border:0; border-bottom:1px solid var(--line); border-radius:0; background:#e9e6eb; }
-    .tab { position:relative; height:33px; max-width:190px; padding:0 9px; border:0; border-right:1px solid var(--line); border-radius:0; font-size:13px; }
+    .tab { position:relative; height:33px; max-width:190px; min-width:0; padding:0 7px 0 9px; border:0; border-right:1px solid var(--line); border-radius:0; font-size:13px; }
     .tab:hover { background:#f1eff2; }.tab.active { background:var(--paper); border:0; border-right:1px solid var(--line); color:var(--ink); box-shadow:none; }
     .tab.active::after { content:''; position:absolute; left:0; right:0; bottom:0; height:2px; background:var(--accent); }
-    .tab .x { margin-left:auto; }.new-tab { margin:4px; width:25px; height:25px; border:1px solid transparent; border-radius:4px; background:transparent; font-size:16px; }.new-tab:hover { border-color:#cbc5ce; background:#f7f5f8; }
+    .tab .tab-title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }.tab .x { flex:none; display:grid; place-items:center; width:20px; height:20px; margin-left:auto; border-radius:3px; }.new-tab { margin:4px; width:25px; height:25px; border:1px solid transparent; border-radius:4px; background:transparent; font-size:16px; }.new-tab:hover { border-color:#cbc5ce; background:#f7f5f8; }
     .area { border:0; border-radius:0; box-shadow:none; }
     .launcher { gap:9px; }.launcher .spark { display:grid; place-items:center; width:42px; height:42px; border:1px solid var(--line); border-radius:8px; background:#f4f1f5; color:var(--accent); font-size:21px; }.launcher h2 { font-size:18px; }.launcher p { font-size:14px; line-height:1.5; }.launcher button { padding:7px 10px; border:1px solid var(--line); border-radius:4px; background:white; }
     .editor { padding:12px 14px; background:#fdfcfd; font-size:13px; line-height:1.65; }
@@ -237,8 +237,9 @@
       for (const tab of tabs) {
         const button = document.createElement('button');
         button.className = `tab ${tab.id === active ? 'active' : ''}`;
-        button.innerHTML = `${tab.kind === 'terminal' ? '▣ ' : ''}<span>${tab.name}</span><span class="x">×</span>`;
+        button.innerHTML = `${tab.kind === 'terminal' ? '▣ ' : ''}<span class="tab-title" title="${escapeHtml(tab.name)}">${escapeHtml(tab.name)}</span><span class="x" title="Close tab" aria-label="Close ${escapeHtml(tab.name)}">×</span>`;
         button.onclick = (event) => event.target.classList.contains('x') ? void closeTab(tab.id) : activate(tab.id);
+        button.oncontextmenu = (event) => { event.preventDefault(); event.stopPropagation(); showTabMenu(event, tab.id); };
         bar.insertBefore(button, $('new-terminal'));
       }
     }
@@ -302,12 +303,16 @@
       if (tab?.term) setTimeout(() => { tab.fit.fit(); tab.term.focus(); }, 0);
     }
     function activate(id) { active = id; renderTabs(); renderArea(); renderAttachments(); saveState(); }
-    async function closeTab(id, skipConfirm = false) {
-      const tab = tabs.find((item) => item.id === id); if (!skipConfirm && tab?.dirty && !await appConfirm('Unsaved changes', `Close ${tab.name} without saving?`, 'Close anyway', true)) return;
-      tab?.ws?.close(); tab?.resizeObserver?.disconnect(); tab?.term?.dispose(); if (tab?.objectUrl) URL.revokeObjectURL(tab.objectUrl); tab?.panel?.remove(); contextEnabled.delete(id);
-      tabs = tabs.filter((item) => item.id !== id);
-      if (active === id) active = tabs.at(-1)?.id || null; renderTabs(); renderArea(); renderAttachments(); saveState();
+    function disposeTab(tab) { tab.ws?.close(); tab.resizeObserver?.disconnect(); tab.term?.dispose(); if (tab.objectUrl) URL.revokeObjectURL(tab.objectUrl); tab.panel?.remove(); contextEnabled.delete(tab.id); }
+    async function closeTabs(ids, skipConfirm = false) {
+      const closing = tabs.filter((tab) => ids.includes(tab.id));
+      const dirty = closing.filter((tab) => tab.dirty);
+      if (!skipConfirm && dirty.length && !await appConfirm('Unsaved changes', `Close ${dirty.length} unsaved tab${dirty.length === 1 ? '' : 's'}?`, 'Close anyway', true)) return;
+      closing.forEach(disposeTab); tabs = tabs.filter((tab) => !ids.includes(tab.id));
+      if (!tabs.some((tab) => tab.id === active)) active = tabs.at(-1)?.id || null;
+      renderTabs(); renderArea(); renderAttachments(); saveState();
     }
+    async function closeTab(id, skipConfirm = false) { await closeTabs([id], skipConfirm); }
     function newTerminal() { const count = tabs.filter((tab) => tab.kind === 'terminal').length + 1; const tab = { id: `term_${uid()}`, kind: 'terminal', name: `Terminal ${count}`, output: '' }; tabs.push(tab); activate(tab.id); }
     const fileIcon = (directory) => directory
       ? '<svg class="file-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h6l2 2h9v10h-17z" fill="currentColor" opacity=".16"/><path d="M3.5 6.5h6l2 2h9v10h-17z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>'
@@ -368,6 +373,14 @@
       if (!isDirectory) add('Download', async () => downloadFile({ path, name: path.split('/').pop() }));
       add('Delete', async () => { if (await appConfirm('Delete item', `Permanently delete ${path}?`, 'Delete', true)) await deletePath(path); }, true);
       menu.style.left = `${Math.min(event.clientX, window.innerWidth - 140)}px`; menu.style.top = `${Math.min(event.clientY, window.innerHeight - 120)}px`; menu.classList.add('open');
+    }
+    function showTabMenu(event, id) {
+      const menu = $('file-menu'); menu.innerHTML = '';
+      const add = (label, action, danger = false) => { const button = document.createElement('button'); button.textContent = label; if (danger) button.className = 'danger'; button.onclick = async () => { menu.classList.remove('open'); await action(); }; menu.append(button); };
+      add('Close Tab', () => closeTab(id));
+      add('Close Other Tabs', () => closeTabs(tabs.filter((tab) => tab.id !== id).map((tab) => tab.id)));
+      add('Close All Tabs', () => closeTabs(tabs.map((tab) => tab.id)), true);
+      menu.style.left = `${Math.min(event.clientX, window.innerWidth - 170)}px`; menu.style.top = `${Math.min(event.clientY, window.innerHeight - 120)}px`; menu.classList.add('open');
     }
     function message(role, text) { const element = document.createElement('div'); element.className = `message ${role}`; element.textContent = text; $('messages').append(element); $('messages').scrollTop = $('messages').scrollHeight; }
     const MAX_CONTEXT_CHARS = 10000;

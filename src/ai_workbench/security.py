@@ -23,7 +23,11 @@ class Workspace:
         return candidate
 
     def relative(self, path: Path) -> str:
-        return path.resolve(strict=False).relative_to(self.root).as_posix()
+        resolved = path.resolve(strict=False)
+        try:
+            return resolved.relative_to(self.root).as_posix()
+        except ValueError as error:
+            raise WorkspaceSecurityError("Path is outside the workspace") from error
 
     def is_hidden(self, path: Path) -> bool:
         return any(part.startswith(".") for part in path.relative_to(self.root).parts)
